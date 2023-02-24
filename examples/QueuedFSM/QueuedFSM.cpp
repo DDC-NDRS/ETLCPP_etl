@@ -33,6 +33,7 @@ SOFTWARE.
 
 #include "etl/queue.h"
 #include "etl/fsm.h"
+#include "etl/hfsm.h"
 #include "etl/message_packet.h"
 
 #include <iostream>
