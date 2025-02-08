@@ -360,6 +360,7 @@ namespace
     {
       Data data(initial_data.begin(), initial_data.end());
       Data other_data;
+      other_data.push_back(nullptr);
 
       other_data = std::move(data);
 
@@ -1069,6 +1070,52 @@ namespace
     }
 
     //*************************************************************************
+    TEST(test_emplace_default)
+    {
+      static int initial = 0;
+
+      // First fill with Initial values.
+      etl::vector<int*, SIZE> data;
+      data.resize(SIZE, &initial);
+      data.clear();
+
+      // Then emplace Default values.
+      for (size_t i = 0; i < SIZE; ++i)
+      {
+        data.emplace(data.begin());
+      }
+
+      // Compare with an array of default values.
+      std::array<int*, SIZE> compare_data;
+      compare_data.fill(nullptr);
+
+      CHECK_TRUE(std::equal(compare_data.begin(), compare_data.end(), data.begin()));
+    }
+
+    //*************************************************************************
+    TEST(test_emplace_back_default)
+    {
+      static int initial = 0;
+
+      // First fill with initial values.
+      etl::vector<int*, SIZE> data;
+      data.resize(SIZE, &initial);
+      data.clear();
+
+      // Then emplace default values.
+      for (size_t i = 0; i < SIZE; ++i)
+      {
+        data.emplace_back();
+      }
+
+      // Compare with an array of default values.
+      std::array<int*, SIZE> compare_data;
+      compare_data.fill(nullptr);
+
+      CHECK_TRUE(std::equal(compare_data.begin(), compare_data.end(), data.begin()));
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_pop_back)
     {
       Compare_Data compare_data(initial_data.begin(), initial_data.end());
@@ -1179,10 +1226,11 @@ namespace
     }
 
     //*************************************************************************
+#include "etl/private/diagnostic_array_bounds_push.h"
     TEST_FIXTURE(SetupFixture, test_insert_position_value_excess)
     {
-      const size_t INITIAL_SIZE     = SIZE;
-      int INITIAL_VALUE       = 1;
+      const size_t INITIAL_SIZE = SIZE;
+      int INITIAL_VALUE = 1;
 
       Data data(INITIAL_SIZE, &INITIAL_VALUE);
 
@@ -1198,6 +1246,7 @@ namespace
 
       CHECK_THROW(data.insert(data.begin() + offset, &INITIAL_VALUE), etl::vector_full);
     }
+#include "etl/private/diagnostic_pop.h"
 
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_emplace_position_value)

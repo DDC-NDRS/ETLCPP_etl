@@ -43,6 +43,10 @@ SOFTWARE.
 #include "algorithm.h"
 #include "private/minmax_push.h"
 
+#if ETL_USING_STL && ETL_USING_CPP17
+  #include <string_view>
+#endif
+
 #include <stdint.h>
 
 namespace etl
@@ -96,9 +100,9 @@ namespace etl
   {
   public:
 
-    typedef T                                     value_type;
-    typedef TTraits                               traits_type;
-    typedef size_t                                size_type;
+    typedef T        value_type;
+    typedef TTraits  traits_type;
+    typedef size_t   size_type;
     typedef const T& const_reference;
     typedef const T* const_pointer;
     typedef const T* const_iterator;
@@ -268,7 +272,7 @@ namespace etl
     //*************************************************************************
     ETL_CONSTEXPR size_t size() const
     {
-      return (mend - mbegin);
+      return static_cast<size_t>(mend - mbegin);
     }
 
     //*************************************************************************
@@ -326,7 +330,7 @@ namespace etl
     //*************************************************************************
     /// Returns a const reference to the indexed value.
     //*************************************************************************
-    ETL_CONSTEXPR const_reference at(size_t i) const
+    const_reference at(size_t i) const
     {
       ETL_ASSERT((mbegin != ETL_NULLPTR && mend != ETL_NULLPTR), ETL_ERROR(string_view_uninitialised));
       ETL_ASSERT(i < size(), ETL_ERROR(string_view_bounds));
@@ -662,6 +666,7 @@ namespace etl
             if (mbegin[i] == view[j])
             {
               found = true;
+              break;
             }
           }
 
@@ -715,6 +720,7 @@ namespace etl
           if (mbegin[position] == view[j])
           {
             found = true;
+            break;
           }
         }
 
@@ -743,6 +749,30 @@ namespace etl
     ETL_CONSTEXPR14 size_type find_last_not_of(const T* text, size_type position = npos) const
     {
       return find_last_not_of(etl::basic_string_view<T, TTraits>(text), position);
+    }
+
+    //*********************************************************************
+    /// Checks that the view is within this string
+    //*********************************************************************
+    bool contains(const etl::basic_string_view<T, TTraits>& view) const 
+    {
+      return find(view) != npos;
+    }
+
+    //*********************************************************************
+    /// Checks that text is within this string
+    //*********************************************************************
+    bool contains(const_pointer s) const 
+    {
+      return find(s) != npos;
+    }
+
+    //*********************************************************************
+    /// Checks that character is within this string
+    //*********************************************************************
+    bool contains(value_type c) const 
+    {
+      return find(c) != npos;
     }
 
     //*************************************************************************
@@ -802,43 +832,53 @@ namespace etl
 
   typedef etl::basic_string_view<char>     string_view;
   typedef etl::basic_string_view<wchar_t>  wstring_view;
+  typedef etl::basic_string_view<char8_t>  u8string_view;
   typedef etl::basic_string_view<char16_t> u16string_view;
   typedef etl::basic_string_view<char32_t> u32string_view;
 
   //*************************************************************************
   /// make_string_view.
   //*************************************************************************
-  template<size_t ARRAY_SIZE>
-  ETL_CONSTEXPR14 string_view make_string_view(const char(&text)[ARRAY_SIZE])
+  template<size_t Array_Size>
+  ETL_CONSTEXPR14 string_view make_string_view(const char(&text)[Array_Size])
   {
-    size_t length = etl::char_traits<char>::length(text, ARRAY_SIZE - 1U);
+    size_t length = etl::char_traits<char>::length(text, Array_Size - 1U);
 
     return string_view(text, length);
   }
 
   //***********************************
-  template<size_t ARRAY_SIZE>
-  ETL_CONSTEXPR14 wstring_view make_string_view(const wchar_t(&text)[ARRAY_SIZE])
+  template<size_t Array_Size>
+  ETL_CONSTEXPR14 wstring_view make_string_view(const wchar_t(&text)[Array_Size])
   {
-    size_t length = etl::char_traits<wchar_t>::length(text, ARRAY_SIZE - 1U);
+    size_t length = etl::char_traits<wchar_t>::length(text, Array_Size - 1U);
 
     return wstring_view(text, length);
   }
 
   //***********************************
-  template<size_t ARRAY_SIZE>
-  ETL_CONSTEXPR14 u16string_view make_string_view(const char16_t(&text)[ARRAY_SIZE])
+  template<size_t Array_Size>
+  ETL_CONSTEXPR14 u8string_view make_string_view(const char8_t(&text)[Array_Size])
   {
-    size_t length = etl::char_traits<char16_t>::length(text, ARRAY_SIZE - 1U);
+    size_t length = etl::char_traits<char8_t>::length(text, Array_Size - 1U);
+
+    return u8string_view(text, length);
+  }
+
+  //***********************************
+  template<size_t Array_Size>
+  ETL_CONSTEXPR14 u16string_view make_string_view(const char16_t(&text)[Array_Size])
+  {
+    size_t length = etl::char_traits<char16_t>::length(text, Array_Size - 1U);
 
     return u16string_view(text, length);
   }
 
   //***********************************
-  template<size_t ARRAY_SIZE>
-  ETL_CONSTEXPR14 u32string_view make_string_view(const char32_t(&text)[ARRAY_SIZE])
+  template<size_t Array_Size>
+  ETL_CONSTEXPR14 u32string_view make_string_view(const char32_t(&text)[Array_Size])
   {
-    size_t length = etl::char_traits<char32_t>::length(text, ARRAY_SIZE - 1U);
+    size_t length = etl::char_traits<char32_t>::length(text, Array_Size - 1U);
 
     return u32string_view(text, length);
   }
@@ -852,8 +892,8 @@ namespace etl
   {
     size_t operator()(const etl::string_view& text) const
     {
-      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(&text[0]),
-        reinterpret_cast<const uint8_t*>(&text[text.size()]));
+      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(text.data()),
+                                                     reinterpret_cast<const uint8_t*>(text.data() + text.size()));
     }
   };
 
@@ -862,8 +902,8 @@ namespace etl
   {
     size_t operator()(const etl::wstring_view& text) const
     {
-      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(&text[0]),
-        reinterpret_cast<const uint8_t*>(&text[text.size()]));
+      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(text.data()),
+                                                     reinterpret_cast<const uint8_t*>(text.data() + text.size()));
     }
   };
 
@@ -872,8 +912,8 @@ namespace etl
   {
     size_t operator()(const etl::u16string_view& text) const
     {
-      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(&text[0]),
-        reinterpret_cast<const uint8_t*>(&text[text.size()]));
+      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(text.data()),
+                                                     reinterpret_cast<const uint8_t*>(text.data() + text.size()));
     }
   };
 
@@ -882,8 +922,8 @@ namespace etl
   {
     size_t operator()(const etl::u32string_view& text) const
     {
-      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(&text[0]),
-        reinterpret_cast<const uint8_t*>(&text[text.size()]));
+      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(text.data()),
+                                                     reinterpret_cast<const uint8_t*>(text.data() + text.size()));
     }
   };
 #endif

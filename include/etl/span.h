@@ -41,11 +41,13 @@ SOFTWARE.
 #include "integral_limits.h"
 #include "memory.h"
 #include "array.h"
+#include "byte.h"
+#include "static_assert.h"
 
 #include "private/dynamic_extent.h"
 
-#if ETL_USING_STL && ETL_USING_CPP11
-  #include <array>
+#if ETL_USING_CPP20 && ETL_USING_STL
+  #include <span>
 #endif
 
 ///\defgroup span span
@@ -69,8 +71,10 @@ namespace etl
     typedef T*                               pointer;
     typedef const T*                         const_pointer;
 
-    typedef T*                                     iterator;
-    typedef ETL_OR_STD::reverse_iterator<iterator> reverse_iterator;
+    typedef T*                                           iterator;
+    typedef const T*                                     const_iterator;
+    typedef ETL_OR_STD::reverse_iterator<iterator>       reverse_iterator;
+    typedef ETL_OR_STD::reverse_iterator<const_iterator> const_reverse_iterator;
 
     typedef etl::circular_iterator<pointer>                                circular_iterator;
     typedef etl::circular_iterator<ETL_OR_STD::reverse_iterator<pointer> > reverse_circular_iterator;
@@ -78,19 +82,11 @@ namespace etl
     static ETL_CONSTANT size_t extent = Extent;
 
     //*************************************************************************
-    /// Default constructor.
-    //*************************************************************************
-    ETL_CONSTEXPR span() ETL_NOEXCEPT
-      : pbegin(ETL_NULLPTR)
-    {
-    }
-
-    //*************************************************************************
     /// Construct from iterators + size
     //*************************************************************************
     template <typename TIterator, typename TSize>
     ETL_CONSTEXPR explicit span(const TIterator begin_, const TSize /*size_*/) ETL_NOEXCEPT
-      : pbegin(etl::addressof(*begin_))
+      : pbegin(etl::to_address(begin_))
     {
     }
 
@@ -99,76 +95,18 @@ namespace etl
     //*************************************************************************
     template <typename TIterator>
     ETL_CONSTEXPR explicit span(const TIterator begin_, const TIterator /*end_*/)
-      : pbegin(etl::addressof(*begin_))
+      : pbegin(etl::to_address(begin_))
     {
     }
 
     //*************************************************************************
     /// Construct from C array
     //*************************************************************************
-    template<size_t ARRAY_SIZE>
-    ETL_CONSTEXPR span(element_type(&begin_)[ARRAY_SIZE]) ETL_NOEXCEPT
+    template<size_t Array_Size>
+    ETL_CONSTEXPR span(element_type(&begin_)[Array_Size]) ETL_NOEXCEPT
       : pbegin(begin_)
     {
     }
-
-#if ETL_USING_CPP11
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<(N == Extent) && etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(etl::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-    {
-    }
-
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<(N == Extent) && etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(const etl::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-    {
-    }
-#else
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N>
-    ETL_CONSTEXPR span(etl::array<U, N>& a, typename etl::enable_if<(N == Extent) && etl::is_same<typename etl::remove_cv<T>::type, typename etl::remove_cv<U>::type>::value, void>::type* = 0) ETL_NOEXCEPT
-      : pbegin(a.data())
-    {
-    }
-
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N>
-    ETL_CONSTEXPR span(const etl::array<U, N>& a, typename etl::enable_if<(N == Extent) && etl::is_same<typename etl::remove_cv<T>::type, typename etl::remove_cv<U>::type>::value, void>::type* = 0) ETL_NOEXCEPT
-      : pbegin(a.data())
-    {
-    }
-#endif
-
-#if ETL_USING_STL && ETL_USING_CPP11
-    //*************************************************************************
-    /// Construct from std::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<(N == Extent) && etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(std::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-    {
-    }
-
-    //*************************************************************************
-    /// Construct from std::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<(N == Extent) && etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(const std::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-    {
-    }
-#endif
 
 #if ETL_USING_CPP11
     //*************************************************************************
@@ -221,7 +159,7 @@ namespace etl
     //*************************************************************************
     template <typename U, size_t N>
     ETL_CONSTEXPR span(const etl::span<U, N>& other, typename etl::enable_if<(Extent == etl::dynamic_extent) || (N == etl::dynamic_extent) || (N == Extent), void>::type) ETL_NOEXCEPT
-      : pbegin(other.pbegin)
+      : pbegin(other.data())
     {
     }
 
@@ -250,6 +188,14 @@ namespace etl
     }
 
     //*************************************************************************
+    /// Returns a const iterator to the beginning of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_iterator cbegin() const ETL_NOEXCEPT
+    {
+      return pbegin;
+    }
+
+    //*************************************************************************
     /// Returns an iterator to the beginning of the span.
     //*************************************************************************
     ETL_NODISCARD ETL_CONSTEXPR iterator begin() const ETL_NOEXCEPT
@@ -266,11 +212,27 @@ namespace etl
     }
 
     //*************************************************************************
+    /// Returns a const iterator to the end of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_iterator cend() const ETL_NOEXCEPT
+    {
+      return (pbegin + Extent);
+    }
+
+    //*************************************************************************
     /// Returns an iterator to the end of the span.
     //*************************************************************************
     ETL_NODISCARD ETL_CONSTEXPR iterator end() const ETL_NOEXCEPT
     {
       return (pbegin + Extent);
+    }
+
+    //*************************************************************************
+    // Returns a const reverse iterator to the reverse beginning of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_reverse_iterator crbegin() const ETL_NOEXCEPT
+    {
+      return const_reverse_iterator((pbegin + Extent));
     }
 
     //*************************************************************************
@@ -290,6 +252,14 @@ namespace etl
     }
 
     //*************************************************************************
+    /// Returns a const reverse iterator to the end of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_reverse_iterator crend() const ETL_NOEXCEPT
+    {
+      return const_reverse_iterator(pbegin);
+    }
+
+    //*************************************************************************
     /// Returns a reverse iterator to the end of the span.
     //*************************************************************************
     ETL_NODISCARD ETL_CONSTEXPR reverse_iterator rend() const ETL_NOEXCEPT
@@ -302,7 +272,7 @@ namespace etl
     //*************************************************************************
     ETL_NODISCARD ETL_CONSTEXPR bool empty() const ETL_NOEXCEPT
     {
-      return false;
+      return Extent == 0;
     }
 
     //*************************************************************************
@@ -336,6 +306,26 @@ namespace etl
     {
       pbegin = other.pbegin;
       return *this;
+    } 
+
+    //*************************************************************************
+    /// Returns a reference to the value at index 'i'.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR14 reference at(size_t i)
+    {
+      ETL_ASSERT(i < size(), ETL_ERROR(array_out_of_range));
+
+      return pbegin[i];
+    }
+
+    //*************************************************************************
+    /// Returns a const reference to the value at index 'i'.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR14 const_reference at(size_t i) const
+    {
+      ETL_ASSERT(i < size(), ETL_ERROR(array_out_of_range));
+
+      return pbegin[i];
     }
 
     //*************************************************************************
@@ -346,31 +336,15 @@ namespace etl
       return pbegin[i];
     }
 
-    ////*************************************************************************
-    ///// Compare two spans for equality.
-    ////*************************************************************************
-    //template <typename Type2, size_t N2, typename etl::enable_if<etl::is_same<typename etl::remove_cv<Type2>::type, value_type>::value, bool>::type = true>
-    //ETL_NODISCARD ETL_CONSTEXPR bool operator==(const etl::span<Type2, N2>& other) const ETL_NOEXCEPT
-    //{
-    //  return ((begin() == other.begin()) && (Extent == other.size())) ||
-    //         etl::equal(begin(), end(), other.begin(), other.end());
-    //}
-
-    ////*************************************************************************
-    ///// Compare two spans for non-equality.
-    ////*************************************************************************
-    //template <typename Type2, size_t N2, typename etl::enable_if<etl::is_same<typename etl::remove_cv<Type2>::type, value_type>::value, bool>::type = true>
-    //ETL_NODISCARD ETL_CONSTEXPR bool operator!=(const etl::span<Type2, N2>& other) const ETL_NOEXCEPT
-    //{
-    //  return !(*this == other);
-    //}
-
     //*************************************************************************
     /// Obtains a span that is a view over the first COUNT elements of this span.
     //*************************************************************************
     template <size_t COUNT>
     ETL_NODISCARD ETL_CONSTEXPR etl::span<element_type, COUNT> first() const ETL_NOEXCEPT
     {
+      // If Extent is static, check that original span contains at least COUNT elements
+      ETL_STATIC_ASSERT((Extent != etl::dynamic_extent) ? COUNT <= Extent : true, "Original span does not contain COUNT elements");
+
       return etl::span<element_type, COUNT>(pbegin, pbegin + COUNT);
     }
 
@@ -388,6 +362,9 @@ namespace etl
     template <size_t COUNT>
     ETL_NODISCARD ETL_CONSTEXPR etl::span<element_type, COUNT> last() const ETL_NOEXCEPT
     {
+      // If Extent is static, check that original span contains at least COUNT elements
+      ETL_STATIC_ASSERT((Extent != etl::dynamic_extent) ? COUNT <= Extent : true, "Original span does not contain COUNT elements");
+
       return etl::span<element_type, COUNT>(pbegin + Extent - COUNT, (pbegin + Extent));
     }
 
@@ -403,10 +380,16 @@ namespace etl
     //*************************************************************************
     /// Obtains a span that is a view from OFFSET over the next COUNT elements of this span.
     //*************************************************************************
-    template <const size_t OFFSET, size_t COUNT = etl::dynamic_extent>
+    template <size_t OFFSET, size_t COUNT = etl::dynamic_extent>
     ETL_NODISCARD ETL_CONSTEXPR
     etl::span<element_type, COUNT != etl::dynamic_extent ? COUNT : Extent - OFFSET> subspan() const ETL_NOEXCEPT
     {
+      // If Extent is static, check that OFFSET is within the original span
+      ETL_STATIC_ASSERT((Extent != etl::dynamic_extent) ? OFFSET <= Extent : true, "OFFSET is not within the original span");
+
+      // If count is also static, check that OFFSET + COUNT is within the original span
+      ETL_STATIC_ASSERT((Extent != etl::dynamic_extent) && (COUNT != etl::dynamic_extent) ? COUNT <= (Extent - OFFSET) : true, "OFFSET + COUNT is not within the original span");
+      
       return (COUNT == etl::dynamic_extent) ? etl::span<element_type, COUNT != etl::dynamic_extent ? COUNT : Extent - OFFSET>(pbegin + OFFSET, (pbegin + Extent))
                                             : etl::span<element_type, COUNT != etl::dynamic_extent ? COUNT : Extent - OFFSET>(pbegin + OFFSET, pbegin + OFFSET + COUNT);
     }
@@ -414,9 +397,15 @@ namespace etl
     //*************************************************************************
     /// Obtains a span that is a view from OFFSET over the next COUNT elements of this span.
     //*************************************************************************
-    template <const size_t OFFSET, size_t COUNT>
+    template <size_t OFFSET, size_t COUNT>
     etl::span<element_type, COUNT != etl::dynamic_extent ? COUNT : Extent - OFFSET> subspan() const
     {
+      // If Extent is static, check that OFFSET is within the original span
+      ETL_STATIC_ASSERT((Extent != etl::dynamic_extent) ? OFFSET <= Extent : true, "OFFSET is not within the original span");
+
+      // If count is also static, check that OFFSET + COUNT is within the original span
+      ETL_STATIC_ASSERT((Extent != etl::dynamic_extent) && (COUNT != etl::dynamic_extent) ? COUNT <= (Extent - OFFSET) : true, "OFFSET + COUNT is not within the original span");
+      
       if (COUNT == etl::dynamic_extent)
       {
         return etl::span<element_type, (COUNT != etl::dynamic_extent ? COUNT : Extent - OFFSET)>(pbegin + OFFSET, (pbegin + Extent));
@@ -446,7 +435,7 @@ namespace etl
   /// Span - Dynamic Extent
   //***************************************************************************
   template <typename T>
-  class span<T, etl::dynamic_extent>
+  class  span<T, etl::dynamic_extent>
   {
   public:
 
@@ -458,8 +447,10 @@ namespace etl
     typedef T*       pointer;
     typedef const T* const_pointer;
     
-    typedef T*                                     iterator;
-    typedef ETL_OR_STD::reverse_iterator<iterator> reverse_iterator;
+    typedef T*                                           iterator;
+    typedef const T*                                     const_iterator;
+    typedef ETL_OR_STD::reverse_iterator<iterator>       reverse_iterator;
+    typedef ETL_OR_STD::reverse_iterator<const_iterator> const_reverse_iterator;
 
     typedef etl::circular_iterator<pointer>                                circular_iterator;
     typedef etl::circular_iterator<ETL_OR_STD::reverse_iterator<pointer> > reverse_circular_iterator;
@@ -480,8 +471,8 @@ namespace etl
     //*************************************************************************
     template <typename TIterator, typename TSize>
     ETL_CONSTEXPR span(const TIterator begin_, const TSize size_) ETL_NOEXCEPT
-      : pbegin(etl::addressof(*begin_))
-      , pend(etl::addressof(*begin_) + size_)
+      : pbegin(etl::to_address(begin_))
+      , pend(etl::to_address(begin_) + size_)
     {
     }
 
@@ -490,84 +481,20 @@ namespace etl
     //*************************************************************************
     template <typename TIterator>
     ETL_CONSTEXPR span(const TIterator begin_, const TIterator end_)
-      : pbegin(etl::addressof(*begin_))
-      , pend(etl::addressof(*begin_) + etl::distance(begin_, end_))
+      : pbegin(etl::to_address(begin_))
+      , pend(etl::to_address(begin_) + etl::distance(begin_, end_))
     {
     }
 
     //*************************************************************************
     /// Construct from C array
     //*************************************************************************
-    template<size_t ARRAY_SIZE>
-    ETL_CONSTEXPR span(element_type(&begin_)[ARRAY_SIZE]) ETL_NOEXCEPT
+    template<size_t Array_Size>
+    ETL_CONSTEXPR span(element_type(&begin_)[Array_Size]) ETL_NOEXCEPT
       : pbegin(begin_)
-      , pend(begin_ + ARRAY_SIZE)
+      , pend(begin_ + Array_Size)
     {
     }
-
-#if ETL_USING_CPP11
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(etl::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-      , pend(a.data() + a.size())
-    {
-    }
-
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(const etl::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-      , pend(a.data() + a.size())
-    {
-    }
-#else
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N>
-    ETL_CONSTEXPR span(etl::array<U, N>& a, typename etl::enable_if<etl::is_same<typename etl::remove_cv<T>::type, typename etl::remove_cv<U>::type>::value, void>::type* = 0) ETL_NOEXCEPT
-      : pbegin(a.data())
-      , pend(a.data() + a.size())
-    {
-    }
-
-    //*************************************************************************
-    /// Construct from etl::array.
-    //*************************************************************************
-    template <typename U, size_t N>
-    ETL_CONSTEXPR span(const etl::array<U, N>& a, typename etl::enable_if<etl::is_same<typename etl::remove_cv<T>::type, typename etl::remove_cv<U>::type>::value, void>::type* = 0) ETL_NOEXCEPT
-      : pbegin(a.data())
-      , pend(a.data() + a.size())
-    {
-    }
-#endif
-
-#if ETL_USING_STL && ETL_USING_CPP11
-    //*************************************************************************
-    /// Construct from std::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(std::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-      , pend(a.data() + a.size())
-    {
-    }
-
-    //*************************************************************************
-    /// Construct from std::array.
-    //*************************************************************************
-    template <typename U, size_t N, typename = typename etl::enable_if<etl::is_same<etl::remove_cv_t<T>, etl::remove_cv_t<U>>::value, void>::type>
-    ETL_CONSTEXPR span(const std::array<U, N>& a) ETL_NOEXCEPT
-      : pbegin(a.data())
-      , pend(a.data() + a.size())
-    {
-    }
-#endif
 
 #if ETL_USING_CPP11
     //*************************************************************************
@@ -624,8 +551,8 @@ namespace etl
     //*************************************************************************
     template <typename U, size_t N>
     ETL_CONSTEXPR span(const etl::span<U, N>& other) ETL_NOEXCEPT
-      : pbegin(other.pbegin)
-      , pend(other.pend)
+      : pbegin(other.data())
+      , pend(other.data() + other.size())
     {
     }
 
@@ -654,6 +581,14 @@ namespace etl
     }
 
     //*************************************************************************
+    /// Returns a const iterator to the beginning of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_iterator cbegin() const ETL_NOEXCEPT
+    {
+      return pbegin;
+    }
+
+    //*************************************************************************
     /// Returns an iterator to the beginning of the span.
     //*************************************************************************
     ETL_NODISCARD ETL_CONSTEXPR iterator begin() const ETL_NOEXCEPT
@@ -667,6 +602,14 @@ namespace etl
     ETL_NODISCARD ETL_CONSTEXPR circular_iterator begin_circular() const ETL_NOEXCEPT
     {
       return circular_iterator(begin(), end());
+    }
+
+    //*************************************************************************
+    /// Returns a const iterator to the end of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_iterator cend() const ETL_NOEXCEPT
+    {
+      return pend;
     }
 
     //*************************************************************************
@@ -686,11 +629,27 @@ namespace etl
     }
 
     //*************************************************************************
+    // Returns a const reverse iterator to the reverse beginning of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_reverse_iterator crbegin() const ETL_NOEXCEPT
+    {
+      return const_reverse_iterator(pend);
+    }
+
+    //*************************************************************************
     /// Returns a reverse circular iterator to the end of the span.
     //*************************************************************************
     ETL_NODISCARD ETL_CONSTEXPR reverse_circular_iterator rbegin_circular() const ETL_NOEXCEPT
     {
       return reverse_circular_iterator(rbegin(), rend());
+    }
+
+    //*************************************************************************
+    /// Returns a const reverse iterator to the end of the span.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR const_reverse_iterator crend() const ETL_NOEXCEPT
+    {
+      return const_reverse_iterator(pbegin);
     }
 
     //*************************************************************************
@@ -744,32 +703,32 @@ namespace etl
     }
 
     //*************************************************************************
+    /// Returns a reference to the value at index 'i'.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR14 reference at(size_t i)
+    {
+      ETL_ASSERT(i < size(), ETL_ERROR(array_out_of_range));
+
+      return pbegin[i];
+    }
+
+    //*************************************************************************
+    /// Returns a const reference to the value at index 'i'.
+    //*************************************************************************
+    ETL_NODISCARD ETL_CONSTEXPR14 const_reference at(size_t i) const
+    {
+      ETL_ASSERT(i < size(), ETL_ERROR(array_out_of_range));
+
+      return pbegin[i];
+    }
+
+    //*************************************************************************
     /// Returns a reference to the indexed value.
     //*************************************************************************
     ETL_CONSTEXPR reference operator[](const size_t i) const
     {
       return pbegin[i];
     }
-
-    ////*************************************************************************
-    ///// Compare two spans for equality.
-    ////*************************************************************************
-    //template <typename Type2, typename etl::enable_if<etl::is_same<typename etl::remove_cv<Type2>::type, value_type>::value, bool>::type = true>
-    //ETL_NODISCARD ETL_CONSTEXPR bool operator==(const etl::span<Type2>& other) const ETL_NOEXCEPT
-    //{
-    //  return (empty() && other.empty()) ||
-    //         ((begin() == other.begin()) && (end() == other.end())) ||
-    //         etl::equal(begin(), end(), other.begin(), other.end());
-    //}
-
-    ////*************************************************************************
-    ///// Compare two spans for non-equality.
-    ////*************************************************************************
-    //template <typename Type2, typename etl::enable_if<etl::is_same<typename etl::remove_cv<Type2>::type, value_type>::value, bool>::type = true>
-    //ETL_NODISCARD ETL_CONSTEXPR bool operator!=(const etl::span<Type2>& other) const ETL_NOEXCEPT
-    //{
-    //  return !(*this == other);
-    //}
 
     //*************************************************************************
     /// Obtains a span that is a view over the first COUNT elements of this span.
@@ -809,7 +768,7 @@ namespace etl
     //*************************************************************************
     /// Obtains a span that is a view from OFFSET over the next COUNT elements of this span.
     //*************************************************************************
-    template <const size_t OFFSET, size_t COUNT = etl::dynamic_extent>
+    template <size_t OFFSET, size_t COUNT = etl::dynamic_extent>
     ETL_NODISCARD ETL_CONSTEXPR
     etl::span<element_type, COUNT != etl::dynamic_extent ? COUNT : etl::dynamic_extent> subspan() const ETL_NOEXCEPT
     {
@@ -820,7 +779,7 @@ namespace etl
     //*************************************************************************
     /// Obtains a span that is a view from OFFSET over the next COUNT elements of this span.
     //*************************************************************************
-    template <const size_t OFFSET, size_t COUNT>
+    template <size_t OFFSET, size_t COUNT>
     etl::span<element_type, COUNT != etl::dynamic_extent ? COUNT : etl::dynamic_extent> subspan() const
     {
       if (COUNT == etl::dynamic_extent)
@@ -849,6 +808,12 @@ namespace etl
     pointer pend;
   };
 
+  template <typename T, size_t Extent>
+  ETL_CONSTANT size_t span<T, Extent>::extent;
+
+  template <typename T>
+  ETL_CONSTANT size_t span<T, etl::dynamic_extent>::extent;
+
   //*************************************************************************
   /// Compare two spans for equality.
   //*************************************************************************
@@ -874,7 +839,7 @@ namespace etl
 
   //*************************************************************************
   /// Equality function.
-  /// Performs a comparision of the range values.
+  /// Performs a comparison of the range values.
   /// Returns <b>true</b> if one of the following are <b>true</b>
   /// 1. Both spans are empty.
   /// 2. They both point to the same range of data.
@@ -933,11 +898,32 @@ namespace etl
   {
     size_t operator()(const etl::span<T>& view) const
     {
-      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(&view[0]),
-                                                     reinterpret_cast<const uint8_t*>(&view[view.size()]));
+      return etl::private_hash::generic_hash<size_t>(reinterpret_cast<const uint8_t*>(view.data()),
+                                                     reinterpret_cast<const uint8_t*>(view.data() + view.size()));
     }
   };
 #endif
+
+  //*************************************************************************
+  /// Obtains a view to the byte representation of the elements of the span s.
+  //*************************************************************************
+  template <class T, size_t N>
+  span<const byte, (N == etl::dynamic_extent) ? (etl::dynamic_extent) : (N * sizeof(T))> 
+    as_bytes(span<T, N> s) ETL_NOEXCEPT
+  {
+    return span<const byte, (N == etl::dynamic_extent) ? (etl::dynamic_extent) : (N * sizeof(T))>(reinterpret_cast<byte*>(s.data()), s.size_bytes());
+  }
+
+  //*************************************************************************
+  /// Obtains a view to the byte representation of the elements of the span s.
+  //*************************************************************************
+  template <class T, size_t N>
+  span<byte, (N == etl::dynamic_extent) ? (etl::dynamic_extent) : (N * sizeof(T))> 
+    as_writable_bytes(span<T, N> s) ETL_NOEXCEPT
+  {
+    ETL_STATIC_ASSERT(!etl::is_const<T>::value, "span<T> must be of non-const type");
+    return span<byte, (N == etl::dynamic_extent) ? (etl::dynamic_extent) : (N * sizeof(T))>(reinterpret_cast<byte*>(s.data()), s.size_bytes());
+  }
 }
 
 #endif

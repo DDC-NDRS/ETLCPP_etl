@@ -68,10 +68,71 @@ namespace etl
     ETL_STATIC_ASSERT(!etl::is_lvalue_reference<T>::value, "Invalid rvalue to lvalue conversion");
     return static_cast<T&&>(t);
   }
+
+  //******************************************************************************
+  /// See std::forward_like https://en.cppreference.com/w/cpp/utility/forward_like
+  /// Returns a reference to x which has similar properties to T&&.
+  ///\return
+  /// If etl::remove_reference_t<T> is const then returns a const reference if U is an lvalue, otherwise a const rvalue reference.
+  /// If etl::remove_reference_t<T> is not const then returns a reference if U is an lvalue, otherwise an rvalue reference.
+  //******************************************************************************
+  //***********************************
+  /// T is const & lvalue.
+  //***********************************
+  template <typename T, typename U>
+  ETL_NODISCARD
+  ETL_CONSTEXPR
+  etl::enable_if_t<etl::is_const<etl::remove_reference_t<T>>::value && etl::is_lvalue_reference<T>::value, const etl::remove_reference_t<U>&>
+    forward_like(U&& u) ETL_NOEXCEPT
+  {
+    return static_cast<const etl::remove_reference_t<U>&>(u);
+  }
+
+  //***********************************
+  /// T is const & rvalue.
+  //***********************************
+  template <typename T, typename U>
+  ETL_NODISCARD
+  ETL_CONSTEXPR
+  etl::enable_if_t<etl::is_const<etl::remove_reference_t<T>>::value && !etl::is_lvalue_reference<T>::value, const etl::remove_reference_t<U>&&>
+    forward_like(U&& u) ETL_NOEXCEPT
+  {
+    return static_cast<const etl::remove_reference_t<U>&&>(u);
+  }
+
+  //***********************************
+  /// T is not const & lvalue.
+  //***********************************
+  template <typename T, typename U>
+  ETL_NODISCARD
+  ETL_CONSTEXPR
+  etl::enable_if_t<!etl::is_const<etl::remove_reference_t<T>>::value && etl::is_lvalue_reference<T>::value, etl::remove_reference_t<U>&>
+    forward_like(U&& u) ETL_NOEXCEPT
+  {
+    return static_cast<etl::remove_reference_t<U>&>(u);
+  }
+
+  //***********************************
+  /// T is not const & rvalue.
+  //***********************************
+  template <typename T, typename U>
+  ETL_NODISCARD
+  ETL_CONSTEXPR
+  etl::enable_if_t<!etl::is_const<etl::remove_reference_t<T>>::value && !etl::is_lvalue_reference<T>::value, etl::remove_reference_t<U>&&>
+    forward_like(U&& u) ETL_NOEXCEPT
+  {
+    return static_cast<etl::remove_reference_t<U>&&>(u);
+  }
+
+  //***********************************
+  // Defines the type that forward_like would cast to.
+  //***********************************
+  template <typename T, typename U>
+  using forward_like_t = decltype(etl::forward_like<T>(etl::declval<U&>()));
 #endif
 
   // We can't have std::swap and etl::swap templates coexisting in the unit tests
-  // as the compiler will be unable to decide of which one to use, due to ADL.
+  // as the compiler will be unable to decide which one to use, due to ADL.
 #if ETL_NOT_USING_STL && !defined(ETL_IN_UNIT_TEST)
   //***************************************************************************
   // swap
@@ -275,7 +336,9 @@ namespace etl
   template <typename T1, typename T2>
   inline bool operator ==(const pair<T1, T2>& a, const pair<T1, T2>& b)
   {
-    return (a.first == b.first) && (a.second == b.second);
+#include "private/diagnostic_float_equal_push.h"
+    return (a.first == b.first) && !(a.second < b.second) && !(a.second > b.second);
+#include "private/diagnostic_pop.h"
   }
 
   /// Uses @c operator== to find the result.
@@ -433,7 +496,7 @@ namespace etl
   
     ETL_STATIC_ASSERT(etl::is_integral<T>::value, "Integral types only");
 
-    typedef T value_type;
+    using value_type = T;
   
     static ETL_CONSTEXPR size_t size() ETL_NOEXCEPT 
     { 
@@ -441,7 +504,7 @@ namespace etl
     }
   };
 
-  namespace private_integer_sequence
+  namespace private_index_sequence
   {
     template <size_t N, typename IndexSeq>
     struct make_index_sequence;
@@ -449,19 +512,19 @@ namespace etl
     template <size_t N, size_t... Indices>
     struct make_index_sequence<N, etl::integer_sequence<size_t, Indices...>>
     {
-      typedef typename make_index_sequence<N - 1, etl::integer_sequence<size_t, N - 1, Indices...>>::type type;
+      using type = typename make_index_sequence<N - 1, etl::integer_sequence<size_t, N - 1, Indices...>>::type;
     };
 
     template <size_t... Indices>
     struct make_index_sequence<0, etl::integer_sequence<size_t, Indices...>>
     {
-      typedef etl::integer_sequence<size_t, Indices...> type;
+      using type = etl::integer_sequence<size_t, Indices...>;
     };
   }
 
   //***********************************
   template <size_t N>
-  using make_index_sequence = typename private_integer_sequence::make_index_sequence<N, etl::integer_sequence<size_t>>::type;
+  using make_index_sequence = typename private_index_sequence::make_index_sequence<N, etl::integer_sequence<size_t>>::type;
 
   //***********************************
   template <size_t... Indices>
@@ -517,7 +580,7 @@ namespace etl
   //*************************
   template <typename T> struct in_place_type_t 
   {
-    explicit ETL_CONSTEXPR in_place_type_t() {};
+    explicit ETL_CONSTEXPR in_place_type_t() {}
   };
 
 #if ETL_USING_CPP17
@@ -538,10 +601,13 @@ namespace etl
 
 #if ETL_USING_CPP11
   //*************************************************************************
-  /// A function wrapper for free/global functions.
+  // A function wrapper for free/global functions.
+  // Deprecated.
+  // See etl::function_ptr_as_functor for a runtime time wrapper option.
+  // See etl::function_as_functor for a compile time wrapper option.
   //*************************************************************************
   template <typename TReturn, typename... TParams>
-  class functor
+  class ETL_DEPRECATED functor
   {
   public:
 
@@ -555,7 +621,7 @@ namespace etl
 
     //*********************************
     /// Const function operator.
-    //*********************************
+    //********************************* 
     constexpr TReturn operator()(TParams... args) const
     {
       return ptr(etl::forward<TParams>(args)...);
@@ -566,18 +632,18 @@ namespace etl
     /// The pointer to the function.
     TReturn(*ptr)(TParams...);
   };
-#endif
 
-#if ETL_USING_CPP11
   //*****************************************************************************
-  // A wrapper for a member function
+  // Wrap a member function with a static free function.
   // Creates a static member function that calls the specified member function.
+  // Deprecated
+  // See etl::member_function_as_static
   //*****************************************************************************
   template <typename T>
   class member_function_wrapper;
 
   template <typename TReturn, typename... TParams>
-  class member_function_wrapper<TReturn(TParams...)>
+  class ETL_DEPRECATED member_function_wrapper<TReturn(TParams...)>
   {
   public:
 
@@ -587,12 +653,12 @@ namespace etl
       return (Instance.*Method)(etl::forward<TParams>(params)...);
     }
   };
-#endif
 
-#if ETL_USING_CPP11
   //*****************************************************************************
-  // A wrapper for a functor
+  // Wrap a functor with a static free function.
   // Creates a static member function that calls the specified functor.
+  // Deprecated
+  // See etl::functor_as_static
   //*****************************************************************************
   template <typename T>
   class functor_wrapper;
@@ -609,7 +675,104 @@ namespace etl
     }
   };
 #endif
+
+#if ETL_USING_CPP17
+  //*****************************************************************************
+  // Wraps a functor with a static free function at compile time.
+  // Creates a static member 'call' that calls the specified functor.
+  //*****************************************************************************
+  template <auto& Instance>
+  struct functor_as_static 
+  {
+    template <typename... TArgs>
+    static constexpr auto call(TArgs&&... args)
+    {
+      return (Instance.operator())(etl::forward<TArgs>(args)...);
+    }
+  };
+
+  //*****************************************************************************
+  // Wraps a member function with a static free function at compile time.
+  // Creates a static member 'call' that calls the specified member function.
+  //*****************************************************************************
+  template <auto Method, auto& Instance>
+  struct member_function_as_static 
+  {
+    template <typename... TArgs>
+    static constexpr auto call(TArgs&&... args)
+    {
+      return (Instance.*Method)(etl::forward<TArgs>(args)...);
+    }
+  };
+
+  //*****************************************************************************
+  // Wraps a member function with a functor at compile time.
+  // Creates a functor that calls the specified member function.
+  //*****************************************************************************
+  template <auto Method, auto& Instance>
+  class member_function_as_functor
+  {
+  public:
+
+    template <typename... TArgs>
+    constexpr auto operator()(TArgs&&... args) const -> decltype((Instance.*Method)(etl::forward<TArgs>(args)...))
+    {
+      return (Instance.*Method)(etl::forward<TArgs>(args)...);
+    }
+  };
+
+  //*****************************************************************************
+  // Wraps a function with a functor at compile time.
+  // Creates a functor that calls the specified free function.
+  //*****************************************************************************
+  template <auto Function>
+  class function_as_functor
+  {
+  public:
+
+    template<typename... TArgs>
+    constexpr auto operator()(TArgs&&... args) const -> decltype(Function(etl::forward<TArgs>(args)...))
+    {
+      return Function(etl::forward<TArgs>(args)...);
+    }
+  };
+#endif
+
+#if ETL_USING_CPP11
+  //*****************************************************************************
+  // Wraps a function pointer with a functor at run time.
+  // Creates a functor that calls the specified free function.
+  //*****************************************************************************
+  template <typename T>
+  class function_ptr_as_functor;
+
+  template <typename TReturn, typename... TArgs>
+  class function_ptr_as_functor<TReturn(TArgs...)>
+  {
+  public:
+
+    //*********************************
+    /// Constructor.
+    //*********************************
+    constexpr function_ptr_as_functor(TReturn(*ptr_)(TArgs...))
+      : ptr(ptr_)
+    {
+    }
+
+    //*********************************
+    /// Const function operator.
+    //*********************************
+    constexpr TReturn operator()(TArgs... args) const
+    {
+      return ptr(etl::forward<TArgs>(args)...);
+    }
+
+  private:
+
+    /// The pointer to the function.
+    TReturn(*ptr)(TArgs...);
+  };
+#endif
 }
 
 #endif
-

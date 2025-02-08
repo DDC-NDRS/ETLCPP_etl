@@ -55,7 +55,7 @@ SOFTWARE.
 //*****************************************************************************
 namespace etl
 {
-#if ETL_USING_CPP11 && !defined(ETL_USE_LEGACY_VARIANT)
+#if ETL_NOT_USING_LEGACY_VARIANT
   namespace legacy
   {
 #endif
@@ -65,7 +65,7 @@ namespace etl
       /// Placeholder for unused template parameters.
       /// This class is never instantiated.
       //*************************************************************************
-      template <const size_t ID>
+      template <size_t ID>
       struct no_type
       {
       };
@@ -460,12 +460,12 @@ namespace etl
       /// Default constructor.
       /// Sets the state of the instance to containing no valid data.
       //***************************************************************************
-#include "etl/private/diagnostic_uninitialized_push.h"
+#include "diagnostic_uninitialized_push.h"
       variant()
         : type_id(UNSUPPORTED_TYPE_ID)
       {
       }
-#include "etl/private/diagnostic_pop.h"
+#include "diagnostic_pop.h"
 
       //***************************************************************************
       /// Constructor that catches any types that are not supported.
@@ -481,9 +481,23 @@ namespace etl
       }
 
       //***************************************************************************
+      /// Constructor that catches any types that are not supported.
+      /// Forces a ETL_STATIC_ASSERT.
+      //***************************************************************************
+      template <size_t Index, typename T>
+      explicit variant(etl::in_place_index_t<Index>, T const& value)
+        : type_id(Index)
+      {
+        ETL_STATIC_ASSERT(Type_Id_Lookup<T>::type_id == Index, "Missmatched type");
+        ::new (static_cast<T*>(data)) T(value);
+        type_id = Index;
+      }
+
+      //***************************************************************************
       /// Copy constructor.
       ///\param other The other variant object to copy.
       //***************************************************************************
+#include "diagnostic_uninitialized_push.h"
       variant(const variant& other)
       {
         switch (other.type_id)
@@ -501,6 +515,7 @@ namespace etl
 
         type_id = other.type_id;
       }
+#include "diagnostic_pop.h"
 
 #if ETL_USING_CPP11 && ETL_NOT_USING_STLPORT && !defined(ETL_VARIANT_FORCE_CPP03_IMPLEMENTATION)
       //*************************************************************************
@@ -518,6 +533,21 @@ namespace etl
         return *static_cast<T*>(data);
       }
 #else
+      //***************************************************************************
+      /// Emplace with one constructor parameter.
+      //***************************************************************************
+      template <typename T>
+      T& emplace()
+      {
+        ETL_STATIC_ASSERT(Type_Is_Supported<T>::value, "Unsupported type");
+
+        destruct_current();
+        ::new (static_cast<T*>(data)) T();
+        type_id = Type_Id_Lookup<T>::type_id;
+
+        return *static_cast<T*>(data);
+      }
+
       //***************************************************************************
       /// Emplace with one constructor parameter.
       //***************************************************************************
@@ -852,7 +882,7 @@ namespace etl
       }
 
     private:
-
+#include "diagnostic_uninitialized_push.h"
       //***************************************************************************
       /// Destruct the current occupant of the variant.
       //***************************************************************************
@@ -873,6 +903,7 @@ namespace etl
 
         type_id = UNSUPPORTED_TYPE_ID;
       }
+#include "diagnostic_pop.h"
 
       //***************************************************************************
       /// The internal storage.
@@ -987,8 +1018,7 @@ namespace etl
 
 #undef ETL_GEN_LEGACY_VISIT
 
-#if ETL_USING_CPP11 && !defined(ETL_USE_LEGACY_VARIANT)
+#if ETL_NOT_USING_LEGACY_VARIANT
   }
 #endif
 }
-

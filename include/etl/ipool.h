@@ -272,6 +272,14 @@ namespace etl
     }
 
     //*************************************************************************
+    /// Returns the maximum size of an item in the pool.
+    //*************************************************************************
+    size_t max_item_size() const
+    {
+      return Item_Size;
+    }
+
+    //*************************************************************************
     /// Returns the maximum number of items in the pool.
     //*************************************************************************
     size_t capacity() const
@@ -380,20 +388,19 @@ namespace etl
       // Does it belong to us?
       ETL_ASSERT(is_item_in_pool(p_value), ETL_ERROR(pool_object_not_in_pool));
 
-      if (p_next != ETL_NULLPTR)
+      if (items_allocated > 0) 
       {
         // Point it to the current free item.
         *(uintptr_t*)p_value = reinterpret_cast<uintptr_t>(p_next);
+
+        p_next = p_value;
+
+        --items_allocated;
       }
-      else
+      else 
       {
-        // This is the only free item.
-        *((uintptr_t*)p_value) = 0;
+        ETL_ASSERT_FAIL(ETL_ERROR(pool_no_allocation));
       }
-
-      p_next = p_value;
-
-      --items_allocated;
     }
 
     //*************************************************************************
