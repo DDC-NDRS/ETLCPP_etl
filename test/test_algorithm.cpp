@@ -1365,6 +1365,17 @@ namespace
     }
 
     //*************************************************************************
+    TEST(copy_s_random_iterator)
+    {
+      int data1[] = { 1, 2, 3, 4, 5 };
+      int out1[10];
+      CHECK_THROW(etl::copy_s(std::end(data1), std::begin(data1), std::begin(out1), std::end(out1)), etl::algorithm_error);
+      CHECK_THROW(etl::copy_s(std::begin(data1), std::end(data1), std::end(out1), std::begin(out1)), etl::algorithm_error);
+      CHECK_THROW(etl::move_s(std::end(data1), std::begin(data1), std::begin(out1), std::end(out1)), etl::algorithm_error);
+      CHECK_THROW(etl::move_s(std::begin(data1), std::end(data1), std::end(out1), std::begin(out1)), etl::algorithm_error);
+    }
+
+    //*************************************************************************
     TEST(copy_4_parameter_non_random_iterator)
     {
       std::list<int> data1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
@@ -2010,10 +2021,10 @@ namespace
       {
         std::shuffle(data.begin(), data.end(), urng);
 
-        std::forward_list<int> data1(data.begin(), data.end());
+        std::vector<int>       data1(data.begin(), data.end());
         std::forward_list<int> data2(data.begin(), data.end());
 
-        data1.sort();
+        std::sort(data1.begin(), data1.end());
         etl::selection_sort(data2.begin(), data2.end());
 
         bool is_same = std::equal(data1.begin(), data1.end(), data2.begin());

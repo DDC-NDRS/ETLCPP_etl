@@ -38,13 +38,11 @@ SOFTWARE.
 #include "char_traits.h"
 #include "alignment.h"
 #include "array.h"
-#include "algorithm.h"
 #include "type_traits.h"
 #include "error_handler.h"
 #include "integral_limits.h"
 #include "exception.h"
 #include "memory.h"
-#include "exception.h"
 #include "binary.h"
 #include "flags.h"
 
@@ -54,6 +52,10 @@ SOFTWARE.
 
 #if ETL_USING_STL && ETL_USING_CPP17
   #include <string_view>
+#endif
+
+#if ETL_USING_STL
+  #include <ostream>
 #endif
 
 #include "private/minmax_push.h"
@@ -138,7 +140,7 @@ namespace etl
   public:
 
     string_truncation(string_type file_name_, numeric_type line_number_)
-      : string_exception(ETL_ERROR_TEXT("string:iterator", ETL_BASIC_STRING_FILE_ID"D"), file_name_, line_number_)
+      : string_exception(ETL_ERROR_TEXT("string:truncation", ETL_BASIC_STRING_FILE_ID"D"), file_name_, line_number_)
     {
     }
   };
@@ -243,7 +245,6 @@ namespace etl
       return max_size() - size();
     }
 
-#if ETL_HAS_STRING_TRUNCATION_CHECKS
     //*************************************************************************
     /// Returns whether the string was truncated by the last operation.
     /// Deprecated. Use is_truncated()
@@ -252,7 +253,11 @@ namespace etl
     ETL_DEPRECATED
     bool truncated() const
     {
+#if ETL_HAS_STRING_TRUNCATION_CHECKS
       return flags.test<IS_TRUNCATED>();
+#else
+      return false;
+#endif
     }
 
     //*************************************************************************
@@ -261,9 +266,14 @@ namespace etl
     //*************************************************************************
     bool is_truncated() const
     {
+#if ETL_HAS_STRING_TRUNCATION_CHECKS
       return flags.test<IS_TRUNCATED>();
+#else
+      return false;
+#endif
     }
 
+#if ETL_HAS_STRING_TRUNCATION_CHECKS
     //*************************************************************************
     /// Clears the 'truncated' flag.
     //*************************************************************************
@@ -281,15 +291,19 @@ namespace etl
     {
       flags.set<CLEAR_AFTER_USE>();
     }
+#endif
 
     //*************************************************************************
     /// Gets the 'secure' state flag.
     //*************************************************************************
     bool is_secure() const
     {
+#if ETL_HAS_STRING_CLEAR_AFTER_USE
       return flags.test<CLEAR_AFTER_USE>();
-    }
+#else
+      return false;
 #endif
+    }
 
   protected:
 
@@ -662,7 +676,10 @@ namespace etl
     //*********************************************************************
     void assign(const etl::ibasic_string<T>& other)
     {
-      assign_impl(other.begin(), other.end(), other.is_truncated(), other.is_secure());
+      if (&other != this)
+      {
+        assign_impl(other.begin(), other.end(), other.is_truncated(), other.is_secure());
+      }
     }
 
     //*********************************************************************
@@ -674,14 +691,17 @@ namespace etl
     //*********************************************************************
     void assign(const etl::ibasic_string<T>& other, size_type subposition, size_type sublength)
     {
-      if (sublength == npos)
+      if (&other != this)
       {
-        sublength = other.size() - subposition;
+        if (sublength == npos)
+        {
+          sublength = other.size() - subposition;
+        }
+
+        ETL_ASSERT(subposition <= other.size(), ETL_ERROR(string_out_of_bounds));
+
+        assign_impl(other.begin() + subposition, other.begin() + subposition + sublength, other.is_truncated(), other.is_secure());
       }
-
-      ETL_ASSERT(subposition <= other.size(), ETL_ERROR(string_out_of_bounds));
-
-      assign_impl(other.begin() + subposition, other.begin() + subposition + sublength, other.is_truncated(), other.is_secure());
     }
 
     //*********************************************************************
@@ -702,9 +722,9 @@ namespace etl
     /// Truncates if the string does not have enough free space.
     ///\param other The other string.
     //*********************************************************************
-    void assign(const_pointer other)
+    void assign(const_pointer text)
     {
-      assign(other, other + etl::strlen(other));
+      assign_impl(text, text + etl::strlen(text), false, false);
     }
 
     //*********************************************************************
@@ -713,18 +733,18 @@ namespace etl
     ///\param other The other string.
     ///\param length The length to copy.
     //*********************************************************************
-    void assign(const_pointer other, size_type length_)
+    void assign(const_pointer text, size_type length_)
     {
-      assign(other, other + length_);
+      assign_impl(text, text + length_, false, false);
     }
 
-    //*********************************************************************
+    //********************************************************************* 
     /// Assigns values to the string from a view.
     //*********************************************************************
     template <typename TOtherTraits>
     void assign(const etl::basic_string_view<T, TOtherTraits>& view)
     {
-      assign(view.begin(), view.end());
+      assign_impl(view.begin(), view.end(), false, false);
     }
 
     //*********************************************************************
@@ -2958,6 +2978,23 @@ namespace etl
   {
     return !(lhs < rhs);
   }
+
+  //***************************************************************************
+  /// Operator overload to write to std basic_ostream
+  ///\param os Reference to the output stream.
+  ///\param str Reference to the string to write.
+  ///\return Reference to the output stream, for chaining write operations.
+  ///\ingroup string
+  //***************************************************************************
+#if ETL_USING_STL
+  template <typename T>
+  std::basic_ostream<T, std::char_traits<T> > &operator<<(std::basic_ostream<T, std::char_traits<T> > &os, 
+                                                          const etl::ibasic_string<T>& str)
+  {
+    os.write(str.data(), str.size());
+    return os;
+  }
+#endif
 }
 
 #include "private/minmax_pop.h"

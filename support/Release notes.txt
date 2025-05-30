@@ -1,5 +1,74 @@
 ﻿===============================================================================
-20.39.5
+20.41.1
+
+Fixes:
+Added missing comparison operators.
+Replaced 'typedef' with 'using' for C++11 chrono features.
+Added inline namespaces for chrono literals.
+Added additional chrono arithmetic tests.
+
+Pull Requests:
+#1106 Make public function definition inline
+
+===============================================================================
+20.41.0
+
+Updates:
+Added etl::tuple
+Added get_token_list to string_utilities to retrieve multiple tokens
+#757  Add etl::chrono time/date classes
+#962  Allow (overload) string append a string_view
+#966  A constructor for delegate with a freestanding function 
+#1047 Deprecate etl::parameter_pack and replace with etl::type_list 
+#1068 Add swap(circular_buffer_ext&&) for circular_buffer_ext 
+#1084 Add 'type' Alias to Strong Types
+#1085 Add The Remaining Math Operators To ETL_TYPEDEF
+
+Fixes:
+#1041 Incorrect rounding of scaled natural numbers in scaled_rounding
+#1042 Incorrect rounding in scaled_rounding with scale of 1 
+#1056 variadic_variant doesn't use the type_id_t type to store type_id
+#1057 ETL_DECLARE_DEBUG_COUNT increases RAM usage even when ETL_DEBUG_COUNT NOT defined 
+#1064 v20.40.0 error: has no member named ‘is_secure’ 
+#1070 MacOs Circlular buffer type conversion error (-Werror) 
+#1073 Test failure on 32-bit x86 arches
+#1076 circular_buffer::pop(N) when holding trivially destructible items 
+#1077 Builds on i386 trigger -Werror=useless-cast
+#1078 Have etl::make_array Check for noexcept Condition
+#1079 Compilation errors in algorithm.h in C++03
+#1095 bit_stream_writer::empty() compares the wrong values to determine empty or not
+#1096 bit_stream_reader constructors do not accept const pointers
+#1101 etl::array supports array sizes of zero
+#1102 Optimise clear of sequence containers for trivially destructible types
+
+Pull Requests:
+#1033 Add newline to end of parameter_pack.h 
+#1036 Add contains() and contains_node() to etl::intrusive_forward_list 
+#1039 Minor cleanup 
+#1040 Implement << operator for std basic_ostream and etl string_view 
+#1043 Added iterator and const_iterator to etl::ipool 
+#1044 Add traits to type_list 
+#1045 Support etl::underlying_type with compiler builtin 
+#1049 Various cleanup changes 
+#1052 Returning const ref of member from const member function 
+#1055 Add enable_if restriction for span constructor from c array
+#1065 Fix cmake helper functions collision 
+#1067 Fix missing is_secure function 
+#1069 Support C++23
+#1072 Add swap(circular_buffer_ext&&) (#1068) 
+#1074 Add Zephyr build system module.yml 
+#1075 Add full West support for ETL in Zephyr builds 
+#1080 Fixed compilation errors in algorithm.h in C++03 and compiler warning
+#1082 Support const pointers in etl::is_aligned() 
+#1083 Add take() to etl::span 
+#1088 Fix numeric overflow in bip buffer's get_write_reserve 
+#1089 Cleanup fixes for C++03 
+#1090 Fix copy_s() for C++03 
+#1103 Add IWYU pragmas to private headers which provide library symbols 
+#1104 Use etl::clamp for setting value in cyclic_value 
+
+===============================================================================
+20.40.0
 
 Updates:
 Added new C++17 function wrappers
@@ -9,16 +78,58 @@ Redefined ETL_DEPRECATED
 Updated nth_type to handle a type list of zero length
 Updated Github Actions to checkout@v4
 Added make_delegate for C++17
+Added starts_with and ends_with to basic_string
+Made construction from std::basic_string_view explicit
+Added contains member function to string_view
+Fixed possible null dereference for etl::multi_span operator ->
+Fixed shadowing warnings
+Changed etl::mem_cast to support bidirectional iterators
+Make 'packed' have better cross platform functionality
 
 Fixes:
-#956 Fix build error (etl::circular_buffer)
-#957 Support heterogenous lookup for maps
-#959 Treat bitset with size_type
-#972 template not allowed warning in parameter pack
+#937  ETL_USING_LEGACY_VARIANT Is always getting evaluated to 1
+#940  Allow etl::observer notification without argument
+#942  Warning on pragma c++20-compat
+#951  Can't get call_if to work because of etl::optional
+#956  Fix build error (etl::circular_buffer)
+#957  Support heterogenous lookup for maps
+#959  Treat bitset with size_type
+#972  Template not allowed warning in parameter pack
+#979  QueuedMessageRouter does not work : message are not sent to queue 
+#980  Documentation clarification: Add link from endianess to unaligned_type
+#982  Added return to etl::optional emplace, fixed typo
+#984  Update Base64 Documentation
+#986  Added const iterators to span
+#987  Fix test loop
+#992  Return reference from emplace() in etl::queue. Added return reference from stack::emplace
+#993  Need "lighter weight" ETL_ASSERT
+#997  Request: operator[ ] for containers can be configured to emit an exception
+#1000 Make ETL_TYPEDEF Trivially Copyable
+#1017 etl::max_element has undefined behavior if the range is empty
+#1016 Allow compile time CRC calculation
+#1019 UB when passing a temporary lambda to a delegate
+#1022 Request: Add option to disable non-lock-free atomics - Added is_always_lock_free member constant to etl::atomic
+#1030 Modify etl::message_packet to not require polymorphic messages
+#1031 etl::string is invalid if calling assign() with itself. Added additional checks for self assignment.
+#1032 Tasking Compiler Failure For parameter_pack.h
 
 Pull Requests:
-#947 Remove unused git submodule config
-#965 Fix accident creation of a delegate to an rvalue delegate when copying/assigning from delegate with mismatching signature
+#947  Remove unused git submodule config
+#965  Fix accident creation of a delegate to an rvalue delegate when copying/assigning from delegate with mismatching signature
+#985  Add uncopyable.h, class uncopyable
+#986  Added const iterators to span
+#989  Packed unaligned_type
+#990  Add contains() method to etl::unordered_map and etl::unordered_set
+#992  Return reference from emplace() in etl::queue
+#999  Add at_address() to etl::unaligned_type. Added etl::unaligned_type_ext instead at_address()
+#1001 Add max_item_size() to etl::ipool
+#1002 Add singleton_base
+#1005 Fixed memory.h: mem_copy, mem_move, mem_compare for pointers to const
+#1006 Fix arm64 signed char
+#1007 Fix fixed extent span empty()
+#1021 Some minor cleanup changes
+#1014 Added missing rational arithmetic functions from <ratio>
+#1027 Add etl::make_span()
 
 ===============================================================================
 20.39.4
@@ -35,6 +146,8 @@ Removed C++11 restriction on etl::observer::notification
 
 Fixes:
 #917 unaligned_type doesn't compile with floating point types
+#923 Missing equality operator for class expected
+#930 Unused parameter warnings
 
 Pull Requests:
 #946 Make include paths to private files relative
