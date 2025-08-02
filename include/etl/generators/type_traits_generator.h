@@ -52,12 +52,12 @@ cog.outl("//********************************************************************
 // To generate to header file, run this at the command line.
 // Note: You will need Python and COG installed.
 //
-// python -m cogapp -d -e -otypes.h -DHandlers=<n> types_generator.h
+// cog -d -e -otypes.h -DHandlers=<n> types_generator.h
 // Where <n> is the number of types to support.
 //
 // e.g.
 // To generate handlers for up to 16 types...
-// python -m cogapp -d -e -otype_traits.h -DIsOneOf=16 type_traits_generator.h
+// cog -d -e -otype_traits.h -DIsOneOf=16 type_traits_generator.h
 //
 // See generate.bat
 //***************************************************************************
@@ -300,6 +300,15 @@ namespace etl
   template <> struct is_integral<unsigned long> : true_type {};
   template <> struct is_integral<long long> : true_type {};
   template <> struct is_integral<unsigned long long> : true_type {};
+#if ETL_HAS_NATIVE_CHAR8_T
+  template <> struct is_integral<char8_t> : true_type {};
+#endif
+#if ETL_HAS_NATIVE_CHAR16_T
+  template <> struct is_integral<char16_t> : true_type {};
+#endif
+#if ETL_HAS_NATIVE_CHAR32_T
+  template <> struct is_integral<char32_t> : true_type {};
+#endif
   template <typename T> struct is_integral<const T> : is_integral<T> {};
   template <typename T> struct is_integral<volatile T> : is_integral<T> {};
   template <typename T> struct is_integral<const volatile T> : is_integral<T> {};
@@ -322,6 +331,15 @@ namespace etl
   template <> struct is_signed<float> : true_type {};
   template <> struct is_signed<double> : true_type {};
   template <> struct is_signed<long double> : true_type {};
+#if ETL_HAS_NATIVE_CHAR8_T
+  template <> struct is_signed<char8_t> : true_type {};
+#endif
+#if ETL_HAS_NATIVE_CHAR16_T
+  template <> struct is_signed<char16_t> : true_type {};
+#endif
+#if ETL_HAS_NATIVE_CHAR32_T
+  template <> struct is_signed<char32_t> : true_type {};
+#endif
   template <typename T> struct is_signed<const T> : is_signed<T> {};
   template <typename T> struct is_signed<volatile T> : is_signed<T> {};
   template <typename T> struct is_signed<const volatile T> : is_signed<T> {};
@@ -428,6 +446,9 @@ namespace etl
   /// is_pointer
   template<typename T> struct is_pointer_helper : false_type {};
   template<typename T> struct is_pointer_helper<T*> : true_type {};
+  template<typename T> struct is_pointer_helper<const T*> : is_pointer_helper<T*> {};
+  template<typename T> struct is_pointer_helper<volatile T*> : is_pointer_helper<T*> {};
+  template<typename T> struct is_pointer_helper<const volatile T*> : is_pointer_helper<T*> {};
   template<typename T> struct is_pointer : is_pointer_helper<typename remove_cv<T>::type> {};
 
 #if ETL_USING_CPP17
@@ -2398,12 +2419,11 @@ typedef integral_constant<bool, true>  true_type;
   };
 #else
   /// Primary template for etl::underlying_type
-  /// Users must spelialise this template for their enumerations. 
+  /// Users must specialise this template for their enumerations.
   template <typename T>
   struct underlying_type
   {
-    ETL_STATIC_ASSERT(false, "No user defined specialisation of etl::underlying_type for this type");
-    typedef char type;
+    typedef int type;
   };
 #endif
 
