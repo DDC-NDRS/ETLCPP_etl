@@ -409,6 +409,61 @@ namespace
     }
 
     //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_constructor_from_range_32bit)
+    {
+      TextBuffer buffer{0};
+      Text text(initial_text.begin(), initial_text.end(), buffer.data(), buffer.size());
+
+      bool is_equal = Equal(initial_text, text);
+      CHECK(is_equal);
+      CHECK_EQUAL(SIZE, text.size());
+      CHECK_FALSE(text.empty());
+      CHECK_FALSE(text.is_truncated());
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_constructor_from_range_32bit_const)
+    {
+      const View wstrView{STR("wchar")};
+      TextBuffer buffer{0};
+      Text text(wstrView.begin(), wstrView.end(), buffer.data(), buffer.size());
+
+      bool is_equal = Equal(wstrView, text);
+      CHECK(is_equal);
+      CHECK_EQUAL(wstrView.size(), text.size());
+      CHECK_FALSE(text.empty());
+      CHECK_FALSE(text.is_truncated());
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_constructor_from_range_8bit)
+    {
+      std::string text8Bit{"8-bit"};
+      TextBuffer buffer{0};
+      Text text(text8Bit.begin(), text8Bit.end(), buffer.data(), buffer.size());
+
+      bool is_equal = Equal(text8Bit, text);
+      CHECK(is_equal);
+      CHECK_EQUAL(text8Bit.size(), text.size());
+      CHECK_FALSE(text.empty());
+      CHECK_FALSE(text.is_truncated());
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_constructor_from_range_8bit_const)
+    {
+      std::string const text8Bit{"8-bit"};
+      TextBuffer buffer{0};
+      Text text(text8Bit.begin(), text8Bit.end(), buffer.data(), buffer.size());
+
+      bool is_equal = Equal(text8Bit, text);
+      CHECK(is_equal);
+      CHECK_EQUAL(text8Bit.size(), text.size());
+      CHECK_FALSE(text.empty());
+      CHECK_FALSE(text.is_truncated());
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_copy_constructor)
     {
       TextBuffer buffer{0};
@@ -1397,6 +1452,38 @@ namespace
 #else
       CHECK_FALSE(text.is_truncated());
 #endif
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_assign_range_8bit)
+    {
+      std::string text8Bit{"8-bit"};
+
+      TextBuffer buffer{0};
+      Text text(buffer.data(), buffer.size());
+
+      text.assign(text8Bit.begin(), text8Bit.end());
+
+      bool is_equal = Equal(text8Bit, text);
+      CHECK(is_equal);
+      CHECK_FALSE(text.is_truncated());
+      CHECK_EQUAL(text8Bit.size(), text.size());
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_assign_range_8bit_const)
+    {
+      std::string const text8Bit{"8-bit"};
+
+      TextBuffer buffer{0};
+      Text text(buffer.data(), buffer.size());
+
+      text.assign(text8Bit.begin(), text8Bit.end());
+
+      bool is_equal = Equal(text8Bit, text);
+      CHECK(is_equal);
+      CHECK_FALSE(text.is_truncated());
+      CHECK_EQUAL(text8Bit.size(), text.size());
     }
 
     //*************************************************************************
@@ -3837,7 +3924,7 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_find_string)
     {
-      const value_t* the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
       TextSTD compare_needle(STR("needle"));
 
@@ -3871,7 +3958,7 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_find_view)
     {
-      const value_t* the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
       TextSTD compare_needle(STR("needle"));
       View needle_view(STR("needle"));
@@ -3902,9 +3989,9 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_find_pointer)
     {
-      const value_t* the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
-      const value_t* needle = STR("needle");
+      const value_t needle[] = STR("needle");
 
       TextSTD compare_haystack(the_haystack);
 
@@ -3933,9 +4020,9 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_find_char_pointer_n)
     {
-      const value_t* the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
-      const value_t* needle = STR("needle");
+      const value_t needle[] = STR("needle");
 
       TextSTD compare_haystack(the_haystack);
 
@@ -4109,7 +4196,7 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_rfind_string)
     {
-      const value_t* the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
       TextSTD compare_needle(STR("needle"));
 
@@ -4141,7 +4228,7 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_rfind_view)
     {
-      const value_t* the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
       TextSTD compare_needle(STR("needle"));
       View needle_view(STR("needle"));
@@ -4168,14 +4255,14 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_rfind_pointer)
     {
-      const value_t*the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
       TextSTD compare_haystack(the_haystack);
 
       TextBufferL buffer{0};
       Text haystack(the_haystack, buffer.data(), buffer.size());
 
-      const value_t* needle = STR("needle");
+      const value_t needle[] = STR("needle");
 
       size_t position1 = TextSTD::npos;
       size_t position2 = TextL::npos;
@@ -4197,14 +4284,14 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_rfind_pointer_n)
     {
-      const value_t*the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
       TextSTD compare_haystack(the_haystack);
 
       TextBufferL buffer{0};
       Text haystack(the_haystack, buffer.data(), buffer.size());
 
-      const value_t* needle = STR("needle");
+      const value_t needle[] = STR("needle");
 
       size_t position1 = TextSTD::npos;
 
@@ -4225,7 +4312,7 @@ namespace
     //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_rfind_c_position)
     {
-      const value_t*the_haystack = STR("A haystack with a needle and another needle");
+      const value_t the_haystack[] = STR("A haystack with a needle and another needle");
 
       TextSTD compare_haystack(the_haystack);
 

@@ -40,12 +40,12 @@ namespace etl
   //***************************************************************************
   /// The deferred callback timer
   //***************************************************************************
-  template <uint_least8_t MAX_TIMERS_, uint32_t MAX_HANDLERS_>
+  template <uint_least8_t Max_Timers_, uint32_t Max_Handlers_>
   class callback_timer_deferred_locked : public etl::icallback_timer_locked
   {
   public:
 
-    ETL_STATIC_ASSERT(MAX_TIMERS_ <= 254U, "No more than 254 timers are allowed");
+    ETL_STATIC_ASSERT(Max_Timers_ <= 254U, "No more than 254 timers are allowed");
 
     typedef icallback_timer_locked::callback_type callback_type;
     typedef icallback_timer_locked::try_lock_type try_lock_type;
@@ -54,29 +54,15 @@ namespace etl
 
   private:
 
-    class CallbackNode 
-    {
-    public:
-
-      CallbackNode(callback_type &callback_,uint_least8_t priority_) : callback(callback_), priority(priority_) 
-      {
-      }
-            
-      bool operator < (const CallbackNode& p) const
-      {
-        return this->priority > p.priority; // comparison was inverted here to easy the code design
-      }
-
-      callback_type callback;
-      uint_least8_t priority;
-    };
+    typedef icallback_timer_locked::callback_node callback_node;
 
   public:
+
     //*******************************************
     /// Constructor.
     //*******************************************
     callback_timer_deferred_locked()
-      : icallback_timer_locked(timer_array, MAX_TIMERS_)
+      : icallback_timer_locked(timer_array, Max_Timers_)
     {
     }
 
@@ -84,7 +70,7 @@ namespace etl
     /// Constructor.
     //*******************************************
     callback_timer_deferred_locked(try_lock_type try_lock_, lock_type lock_, unlock_type unlock_)
-      : icallback_timer_locked(timer_array, MAX_TIMERS_)
+      : icallback_timer_locked(timer_array, Max_Timers_)
     {
       this->set_locks(try_lock_, lock_, unlock_);
     }
@@ -110,12 +96,13 @@ namespace etl
               count -= timer.delta;
 
               active_list.remove(timer.id, true);
+              remove_callback.call_if(timer.id);
 
               if (timer.callback.is_valid())
               {
                 if (!handler_queue.full())
                 {
-                    handler_queue.push(CallbackNode(timer.callback, timer_priorities[timer.id]));
+                    handler_queue.push(callback_node(timer.callback, timer_priorities[timer.id]));
                 }
               }
 
@@ -124,6 +111,7 @@ namespace etl
                 // Reinsert the timer.
                 timer.delta = timer.period;
                 active_list.insert(timer.id);
+                insert_callback.call_if(timer.id);
               }
 
               has_active = !active_list.empty();
@@ -164,7 +152,7 @@ namespace etl
         }
         else
         {
-          CallbackNode &work_todo_callback_node = handler_queue.top();
+          callback_node &work_todo_callback_node = handler_queue.top();
           work_todo_callback = work_todo_callback_node.callback;
           handler_queue.pop();
         }
@@ -210,9 +198,9 @@ namespace etl
 
   private:
 
-    priority_queue<CallbackNode, MAX_HANDLERS_> handler_queue;
-    uint_least8_t timer_priorities[MAX_TIMERS_];
-    timer_data timer_array[MAX_TIMERS_];
+    priority_queue<callback_node, Max_Handlers_> handler_queue;
+    uint_least8_t timer_priorities[Max_Timers_];
+    timer_data timer_array[Max_Timers_];
   };
 }
 
