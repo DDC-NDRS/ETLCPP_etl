@@ -1278,9 +1278,6 @@
     <ClInclude Include="..\..\include\etl\shared_message.h">
       <Filter>ETL\Messaging</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\etl\generators\message_packet_generator.h">
-      <Filter>ETL\Messaging\Generators</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\etl\generators\message_router_generator.h">
       <Filter>ETL\Messaging\Generators</Filter>
     </ClInclude>
@@ -1526,6 +1523,21 @@
     </ClInclude>
     <ClInclude Include="..\..\include\etl\crc64_iso.h">
       <Filter>ETL\Maths\CRC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\etl\callback.h">
+      <Filter>ETL\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\etl\concepts.h">
+      <Filter>UnitTest++\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\etl\invoke.h">
+      <Filter>ETL\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\etl\inplace_function.h">
+      <Filter>ETL\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\etl\generators\message_packet_generator.h">
+      <Filter>ETL\Messaging</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3716,8 +3728,11 @@
     <ClCompile Include="..\syntax_check\delegate_observable.h.t.cpp">
       <Filter>Tests\Syntax Checks\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\test_signal.cpp">
-      <Filter>Tests</Filter>
+    <ClCompile Include="..\syntax_check\signal.h.t.cpp">
+      <Filter>Tests\Syntax Checks\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test_etl_assert.cpp">
+      <Filter>Tests\Misc</Filter>
     </ClCompile>
     <ClCompile Include="..\syntax_check\signal.h.t.cpp">
       <Filter>Tests\Syntax Checks\Source</Filter>
@@ -3726,13 +3741,34 @@
       <Filter>Tests\Misc</Filter>
     </ClCompile>
     <ClCompile Include="..\test_signal.cpp">
-      <Filter>Tests</Filter>
+      <Filter>Tests\Callbacks &amp; Delegates</Filter>
     </ClCompile>
-    <ClCompile Include="..\syntax_check\signal.h.t.cpp">
+    <ClCompile Include="..\test_hfsm_transition_on_enter.cpp">
+      <Filter>Tests\State Machines</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test_signal.cpp">
+      <Filter>Tests\Callbacks &amp; Delegates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\syntax_check\format.h.t.cpp">
       <Filter>Tests\Syntax Checks\Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\test_etl_assert.cpp">
-      <Filter>Tests\Misc</Filter>
+    <ClCompile Include="..\test_format.cpp">
+      <Filter>Tests\Strings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\syntax_check\concepts.h.t.cpp">
+      <Filter>Tests\Syntax Checks\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test_concepts.cpp">
+      <Filter>Tests\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test_invoke.cpp">
+      <Filter>Tests\Callbacks &amp; Delegates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test_is_invocable.cpp">
+      <Filter>Tests\Callbacks &amp; Delegates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test_inplace_function.cpp">
+      <Filter>Tests\Callbacks &amp; Delegates</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

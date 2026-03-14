@@ -194,7 +194,6 @@ add_executable(etl_tests
 	test_hash.cpp
 	test_hfsm.cpp
 	test_hfsm_recurse_to_inner_state_on_start.cpp
-	test_hfsm_transition_on_enter.cpp
 	test_histogram.cpp
 	test_index_of_type.cpp
 	test_indirect_vector.cpp
@@ -217,6 +216,7 @@ add_executable(etl_tests
 	test_list_shared_pool.cpp
 	test_macros.cpp
 	test_make_string.cpp
+	test_manchester.cpp
 	test_map.cpp
 	test_math.cpp
 	test_math_functions.cpp
@@ -286,7 +286,6 @@ add_executable(etl_tests
 	test_scaled_rounding.cpp
 	test_set.cpp
 	test_shared_message.cpp
-	test_signal.cpp
 	test_singleton.cpp
 	test_singleton_base.cpp
 	test_smallest.cpp
@@ -460,12 +459,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 			PRIVATE
 			-fno-omit-frame-pointer
 			-fno-common
+			-pedantic-errors
 			-Wall
 			-Wextra
 			-Werror
 			-Wfloat-equal
 			-Wshadow
 			-Wnull-dereference
+			-Wextra-semi
 			-g
 			)
 endif ()
@@ -475,12 +476,16 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 			PRIVATE
 			-fno-omit-frame-pointer
 			-fno-common
+			-pedantic-errors
 			-Wall
 			-Wextra
 			-Werror
 			-Wfloat-equal
 			-Wshadow
 			-Wnull-dereference
+			-Wextra-semi
+			-Wextra-semi-stmt
+			-Wc++11-extra-semi
 			-g
 			)
 endif ()
