@@ -87,6 +87,7 @@ namespace etl
     // 16 bit.
     typedef crc_parameters<uint16_t, 0x8005U, 0x0000U, 0x0000U, true>  crc16_parameters;
     typedef crc_parameters<uint16_t, 0x1021U, 0xFFFFU, 0x0000U, false> crc16_ccitt_parameters;
+    typedef crc_parameters<uint16_t, 0x8005U, 0xFFFFU, 0x0000U, false> crc16_cms_parameters; /* #CUSTOM@NDRS */
     typedef crc_parameters<uint16_t, 0x1021U, 0x1D0FU, 0x0000U, false> crc16_aug_ccitt_parameters;
     typedef crc_parameters<uint16_t, 0x8005U, 0x0000U, 0x0000U, false> crc16_buypass_parameters;
     typedef crc_parameters<uint16_t, 0x1021U, 0xFFFFU, 0xFFFFU, false> crc16_genibus_parameters;
