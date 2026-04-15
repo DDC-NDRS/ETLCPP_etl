@@ -43,6 +43,13 @@ SOFTWARE.
 
 #if ETL_USING_CPP17
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  #pragma push_macro("min")
+  #pragma push_macro("max")
+  #undef min
+  #undef max
+#endif
+
 namespace etl
 {
   namespace ranges
@@ -6151,6 +6158,11 @@ namespace etl
 
   namespace views = ranges::views;
 } // namespace etl
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  #pragma pop_macro("min")
+  #pragma pop_macro("max")
+#endif
 
 template < class Range, typename RangeAdaptorClosure, typename = etl::enable_if_t<etl::is_invocable_v<RangeAdaptorClosure, Range>>>
 
