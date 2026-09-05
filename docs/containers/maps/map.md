@@ -38,13 +38,13 @@ template <typename TKey,
           typename TMapped, 
           typename TKeyCompare = etl::less<TKey>, 
           typename... TPairs>
-constexpr auto make_flat_map(TValues&&... values)
+constexpr auto make_map(TPairs&&... pairs) -> etl::map<TKey, TMapped, sizeof...(TPairs), TKeyCompare>
 ```
 
 ### Example
 ```cpp
-auto data = etl::make_map<int, int>(etl::pair{0, 1}, etl::pair{2, 3},
-                                    etl::pair{4, 5}, etl::pair{6, 7});
+auto data = etl::make_map<int, int>(etl::pair<int, int>{0, 1}, etl::pair<int, int>{2, 3},
+                                    etl::pair<int, int>{4, 5}, etl::pair<int, int>{6, 7});
 ```
 
 ## Member types
@@ -96,10 +96,9 @@ If assert or exceptions are not enabled then undefined behaviour occurs.
 
 ```cpp
 TMapped& operator[](key_parameter_t key)
-const TMapped& operator[](key_parameter_t key) const
 ```
 **Description**  
-Returns a reference or const reference to the indexed element.
+Returns a reference to the indexed element.
 If the key does not exist then one is created using the default constructor.  
 If the map is full then asserts an `etl::map_full`. If asserts or exceptions are not enabled then undefined behaviour occurs.
 

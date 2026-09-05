@@ -1077,13 +1077,15 @@ namespace
       Compare_Data compare_data(initial_data.begin(), initial_data.end());
       Data         data(initial_data.begin(), initial_data.end());
 
-      Compare_Data::iterator const_cdi     = compare_data.begin() + 2U;
-      int                    compare_value = *(const_cdi + 1U);
-      Compare_Data::iterator cdi           = compare_data.erase(const_cdi);
+      Compare_Data::iterator const_cdi = compare_data.begin() + 2U;
+#include "etl/private/diagnostic_null_dereference_push.h"
+      int compare_value = compare_data[3];
+#include "etl/private/diagnostic_pop.h"
+      Compare_Data::iterator cdi = compare_data.erase(const_cdi);
       CHECK_EQUAL(compare_value, *cdi);
 
       Data::iterator const_di   = data.begin() + 2U;
-      int            data_value = *(const_di + 1U);
+      int            data_value = data[3];
       Data::iterator di         = data.erase(const_di);
       CHECK_EQUAL(data_value, *di);
 
@@ -1108,13 +1110,15 @@ namespace
       Compare_Data compare_data(initial_data.begin(), initial_data.end());
       Data         data(initial_data.begin(), initial_data.end());
 
-      Compare_Data::const_iterator const_cdi     = compare_data.cbegin() + 2U;
-      int                          compare_value = *(const_cdi + 1U);
-      Compare_Data::iterator       cdi           = compare_data.erase(const_cdi);
+      Compare_Data::const_iterator const_cdi = compare_data.cbegin() + 2U;
+#include "etl/private/diagnostic_null_dereference_push.h"
+      int compare_value = compare_data[3];
+#include "etl/private/diagnostic_pop.h"
+      Compare_Data::iterator cdi = compare_data.erase(const_cdi);
       CHECK_EQUAL(compare_value, *cdi);
 
       Data::const_iterator const_di   = data.cbegin() + 2U;
-      int                  data_value = *(const_di + 1U);
+      int                  data_value = data[3];
       Data::iterator       di         = data.erase(const_di);
       CHECK_EQUAL(data_value, *di);
 
@@ -1139,15 +1143,12 @@ namespace
       Compare_Data compare_data(initial_data.begin(), initial_data.end());
       Data         data(initial_data.begin(), initial_data.end());
 
-      Compare_Data::const_iterator const_cdi     = compare_data.cbegin() + 2U;
-      int                          compare_value = *(const_cdi + 2U);
-      Compare_Data::iterator       cdi           = compare_data.erase(const_cdi, const_cdi + 2U);
-      CHECK_EQUAL(compare_value, *cdi);
+      Compare_Data::iterator cdi = compare_data.erase(compare_data.begin() + 2, compare_data.begin() + 4);
 
-      Data::const_iterator const_di   = data.cbegin() + 2U;
-      int                  data_value = *(const_di + 2U);
-      Data::iterator       di         = data.erase(const_di, const_di + 2U);
-      CHECK_EQUAL(data_value, *di);
+      Data::iterator di = data.erase(data.begin() + 2, data.begin() + 4);
+
+      CHECK(cdi == compare_data.begin() + 2);
+      CHECK(di == data.begin() + 2);
 
       CHECK_EQUAL(compare_data.size(), data.size());
 
@@ -1530,8 +1531,12 @@ namespace
     {
       auto data = etl::make_vector<char>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
 
+      // The explicit element type now selects the element type for all
+      // arguments (Library Fundamentals TS make_array design). Previously it
+      // pinned only the first argument's deduced type, and the element type
+      // was still the common type of the arguments - int for this call.
       using Type = typename std::remove_reference<decltype(data[0])>::type;
-      CHECK((std::is_same<int, Type>::value));
+      CHECK((std::is_same<char, Type>::value));
 
       CHECK_EQUAL(0, data[0]);
       CHECK_EQUAL(1, data[1]);
@@ -1563,6 +1568,52 @@ namespace
       CHECK_EQUAL(2, data3[0].second);
       CHECK_EQUAL(3, data3[1].first);
       CHECK_EQUAL(4, data3[1].second);
+    }
+#endif
+
+    //*************************************************************************
+#if ETL_HAS_INITIALIZER_LIST
+    // Arguments that are const-qualified lvalues must be accepted and must not
+    // affect the deduced element type. Guards against the defect fixed for
+    // make_array and make_deque, which forwarded each argument as the element
+    // type rather than as its own deduced type and so rejected const lvalues.
+    TEST(test_make_vector_from_const_lvalues_of_element_type)
+    {
+      static const char static_const_lvalue = 42;
+      const char        local_const_lvalue  = 43;
+      char              mutable_lvalue      = 44;
+
+      auto data = etl::make_vector(static_const_lvalue, local_const_lvalue, mutable_lvalue);
+
+      using Type = typename std::remove_reference<decltype(data[0])>::type;
+      CHECK((std::is_same<char, Type>::value));
+
+      CHECK_EQUAL(42, data[0]);
+      CHECK_EQUAL(43, data[1]);
+      CHECK_EQUAL(44, data[2]);
+    }
+#endif
+
+    //*************************************************************************
+#if ETL_HAS_INITIALIZER_LIST
+    // An explicit element type selects the element type and converts every
+    // argument (Library Fundamentals TS make_array design), accepting
+    // const-qualified lvalues and narrowing initialisers.
+    TEST(test_make_vector_explicit_element_type)
+    {
+      static const char static_const_lvalue = 42;
+      const char        local_const_lvalue  = 43;
+      char              mutable_lvalue      = 44;
+
+      auto data = etl::make_vector<char>(static_const_lvalue, local_const_lvalue, mutable_lvalue, 45, 46);
+
+      CHECK((std::is_same<etl::vector<char, 5U>, decltype(data)>::value));
+
+      CHECK_EQUAL(42, data[0]);
+      CHECK_EQUAL(43, data[1]);
+      CHECK_EQUAL(44, data[2]);
+      CHECK_EQUAL(45, data[3]);
+      CHECK_EQUAL(46, data[4]);
     }
 #endif
 

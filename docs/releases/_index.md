@@ -5,6 +5,24 @@ weight: 2002
 
 Click on the links to see the original Github page.
 
+## 20.48.1
+
+**Pull requests:**  
+
+[#1477](https://github.com/ETLCPP/etl/pull/1477) Fix for 1405: etl::exchange doesn't work with unique_ptr
+[#1484](https://github.com/ETLCPP/etl/pull/1484) Fix `etl::message_timer` firing following timers early on unregister
+[#1485](https://github.com/ETLCPP/etl/pull/1485) Fix `etl::histogram` copy/move not preserving start_index
+[#1486](https://github.com/ETLCPP/etl/pull/1486) Fix `etl::bitset` single-element `from_string` shift on empty string
+[#1487](https://github.com/ETLCPP/etl/pull/1487) Fix `etl::pearson::reset()` not resetting the first-byte flag
+[#1488](https://github.com/ETLCPP/etl/pull/1488) Fix `etl::mem_cast` cross-size copy constructor and assignment
+[#1489](https://github.com/ETLCPP/etl/pull/1489) Add missing interfaces to `etl::chrono`
+[#1490](https://github.com/ETLCPP/etl/pull/1490) Add missing memory functions, according the standard
+[#1491](https://github.com/ETLCPP/etl/pull/1491) Add optional `etl_profile` `label_flag` for Bazel profile injection
+[#1492](https://github.com/ETLCPP/etl/pull/1492) Allow `etl::vector` to store pointers to functions and member functions
+[#1494](https://github.com/ETLCPP/etl/pull/1494) Refactor `variant::emplace` to perfect forward args instead of copy/move construct
+[#1495](https://github.com/ETLCPP/etl/pull/1495) Separate bit order and endianness in `bit_stream.h`
+[#1496](https://github.com/ETLCPP/etl/pull/1496) Fix non-assignable alternatives in variant
+
 ## 20.48.0
 
 **Pull requests:**  
@@ -55,7 +73,7 @@ Click on the links to see the original Github page.
 [#1432](https://github.com/ETLCPP/etl/pull/1432) Simplify and fix test/run-syntax-checks.sh
 [#1433](https://github.com/ETLCPP/etl/pull/1433) Fix the case of using STL without pthreads but with mutexes
 [#1434](https://github.com/ETLCPP/etl/pull/1434) Remove unnecessary includes
-[#1437](https://github.com/ETLCPP/etl/pull/1437) ranges: Fix confict with Zephyr preprocessor definition
+[#1437](https://github.com/ETLCPP/etl/pull/1437) ranges: Fix conflict with Zephyr preprocessor definition
 [#1440](https://github.com/ETLCPP/etl/pull/1440) Make etl::variant capable for ROM placement and optimize runtime size
 [#1441](https://github.com/ETLCPP/etl/pull/1441) Make etl::variant capable for ROM placement and optimize runtime size
 [#1442](https://github.com/ETLCPP/etl/pull/1442) Fix format: float zero-padding, nested replacement width, octal alter…
@@ -134,7 +152,7 @@ Click on the links to see the original Github page.
 
 **Issues:**  
 [#1184](https://github.com/ETLCPP/etl/issues/1184) Request: Adding a method to check whether a etl::callback_timer_atomic is currently running  
-[#1189](https://github.com/ETLCPP/etl/issues/1189) Request: make useage of osMutexRobust in etl::mutex optional  
+[#1189](https://github.com/ETLCPP/etl/issues/1189) Request: make usage of osMutexRobust in etl::mutex optional  
 [#1207](https://github.com/ETLCPP/etl/issues/1207) Monadic Operations for etl::expected  
 [#1240](https://github.com/ETLCPP/etl/issues/1240) Add redundant semicolon checks to CMakeLists.txt and fix issues  
 [#1241](https://github.com/ETLCPP/etl/issues/1241) Add -pedantic-errors to unit test CMakeLists.txt and fix issues  
@@ -317,7 +335,7 @@ Removed redundant ETL_USING_WIDE_CHARACTERS
 Fixes:
 #1126 to_arithmetic-does-not-compile-on-C++98
 #1128 Request: Make Delegate Methods noexcept
-#1130 Use of etl::mem_copy for overlaped areas
+#1130 Use of etl::mem_copy for overlapped areas
 #1132 Make type_def Methods Noexcept
 #1143 v20.41.x, risc-v (esp32-c3) "No user defined specialisation of etl::underlying_type for this type"
 
@@ -492,11 +510,11 @@ Fixes:
 #942  Warning on pragma c++20-compat
 #951  Can't get call_if to work because of etl::optional
 #956  Fix build error (etl::circular_buffer)
-#957  Support heterogenous lookup for maps
+#957  Support heterogeneous lookup for maps
 #959  Treat bitset with size_type
 #972  Template not allowed warning in parameter pack
 #979  QueuedMessageRouter does not work : message are not sent to queue
-#980  Documentation clarification: Add link from endianess to unaligned_type
+#980  Documentation clarification: Add link from endianness to unaligned_type
 #982  Added return to etl::optional emplace, fixed typo
 #984  Update Base64 Documentation
 #986  Added const iterators to span
@@ -621,7 +639,7 @@ Pull Requests:
 #905 Added support for type identity
 
 Other:
-Reenabled address sanitizer for VS2022
+Re-enabled address sanitizer for VS2022
 
 
 20.38.16

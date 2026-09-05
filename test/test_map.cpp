@@ -1720,6 +1720,7 @@ namespace
     {
       using Pair = std::pair<const std::string, int>;
 
+  #include "etl/private/diagnostic_null_dereference_push.h"
       etl::map data{Pair{"0", 0}, Pair{"1", 1}, Pair{"2", 2}, Pair{"3", 3}, Pair{"4", 4}, Pair{"5", 5}};
 
       auto v     = *data.begin();
@@ -1732,6 +1733,7 @@ namespace
       CHECK_EQUAL(3, data.at("3"));
       CHECK_EQUAL(4, data.at("4"));
       CHECK_EQUAL(5, data.at("5"));
+  #include "etl/private/diagnostic_pop.h"
 
       CHECK_TRUE(std::is_sorted(data.begin(), data.end(), data.value_comp()));
     }
@@ -1743,6 +1745,7 @@ namespace
     {
       using Pair = ETL_OR_STD::pair<const std::string, int>;
 
+  #include "etl/private/diagnostic_null_dereference_push.h"
       auto data = etl::make_map<const std::string, int, std::less<std::string>>(Pair{"0", 0}, Pair{"1", 1}, Pair{"2", 2}, Pair{"3", 3}, Pair{"4", 4},
                                                                                 Pair{"5", 5});
 
@@ -1756,8 +1759,32 @@ namespace
       CHECK_EQUAL(3, data.at("3"));
       CHECK_EQUAL(4, data.at("4"));
       CHECK_EQUAL(5, data.at("5"));
+  #include "etl/private/diagnostic_pop.h"
 
       CHECK_TRUE(std::is_sorted(data.begin(), data.end(), data.value_comp()));
+    }
+#endif
+
+    //*************************************************************************
+#if ETL_HAS_INITIALIZER_LIST
+    // Arguments that are const-qualified lvalues of the pair type must be
+    // accepted. Guards against the defect fixed for make_array and make_deque,
+    // which forwarded each argument as the element type rather than as its own
+    // deduced type and so rejected const lvalues.
+    TEST_FIXTURE(SetupFixture, test_make_map_from_const_lvalues_of_pair_type)
+    {
+      using Pair = ETL_OR_STD::pair<const char, int>;
+
+      static const Pair static_const_lvalue('a', 0);
+      const Pair        local_const_lvalue('b', 1);
+      Pair              mutable_lvalue('c', 2);
+
+      auto data = etl::make_map<char, int>(static_const_lvalue, local_const_lvalue, mutable_lvalue);
+
+      CHECK_EQUAL(3U, data.size());
+      CHECK_EQUAL(0, data.at('a'));
+      CHECK_EQUAL(1, data.at('b'));
+      CHECK_EQUAL(2, data.at('c'));
     }
 #endif
 

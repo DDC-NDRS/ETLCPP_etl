@@ -3,11 +3,11 @@ title: "bit_stream_reader"
 ---
 
 {{< callout type="info">}}
-  Header: `bit_stream_reader.h`  
+  Header: `bit_stream.h`  
   Since: `TBC`  
 {{< /callout >}}
 
-A binary streaming utility that allows values to be read from an array of char or unsigned char using custom bits widths for efficient packing. Values may be streamed in either msb or lsb format.  
+A binary streaming utility that allows values to be read from an array of char or unsigned char using custom bits widths for efficient packing. The bit order (MSB or LSB first) and the byte order (endianness) can be configured independently.  
 
 Read functions come in both checked and unchecked forms.  
 - Unchecked reads return a value of the specified type.  
@@ -36,38 +36,42 @@ const_iterator const char*
 ## Member functions
 
 ```cpp
-bit_stream_reader(etl::span<char> span, etl::endian stream_endianness)
+bit_stream_reader(etl::span<char> span, etl::bit_order bit_order, etl::endian byte_order = etl::endian::big)
 ```
 **Parameters**  
 `span` A `char` span of the read buffer.  
-`stream_endianness` The endianness of the stream. `etl::endian::little` or `etl::endian::big`.  
+`bit_order` The bit order of the stream. `etl::bit_order::msb_first` (MSB first) or `etl::bit_order::lsb_first` (LSB first).  
+`byte_order` The byte order (endianness) of the stream. `etl::endian::big` or `etl::endian::little`. Defaults to `etl::endian::big`.  
 
 ---
 
 ```cpp
-bit_stream_reader(etl::span<unsigned char> span, etl::endian stream_endianness)
+bit_stream_reader(etl::span<unsigned char> span, etl::bit_order bit_order, etl::endian byte_order = etl::endian::big)
 ```
 **Parameters**  
 `span` `An unsigned char span` of the read buffer.  
-`stream_endianness` The endianness of the stream. `etl::endian::little` or `etl::endian::big`.  
+`bit_order` The bit order of the stream. `etl::bit_order::msb_first` (MSB first) or `etl::bit_order::lsb_first` (LSB first).  
+`byte_order` The byte order (endianness) of the stream. `etl::endian::big` or `etl::endian::little`. Defaults to `etl::endian::big`.  
 
 ---
 
 ```cpp
-bit_stream_reader(void* begin, void* end, etl::endian stream_endianness)
+bit_stream_reader(const void* begin, const void* end, etl::bit_order bit_order, etl::endian byte_order = etl::endian::big)
 ```
-`begin` A pointer to the beginning of the read buffer.  
-`end` A pointer to the beginning of the read buffer.  
-`stream_endianness` The endianness of the stream. `etl::endian::little` or `etl::endian::big`.  
+`begin` A const pointer to the beginning of the read buffer.  
+`end` A const pointer to the end of the read buffer.  
+`bit_order` The bit order of the stream. `etl::bit_order::msb_first` (MSB first) or `etl::bit_order::lsb_first` (LSB first).  
+`byte_order` The byte order (endianness) of the stream. `etl::endian::big` or `etl::endian::little`. Defaults to `etl::endian::big`.  
 
 ---
 
 ```cpp
-bit_stream_reader(void* begin, size_t length, etl::endian stream_endianness)
+bit_stream_reader(const void* begin, size_t length, etl::bit_order bit_order, etl::endian byte_order = etl::endian::big)
 ```
-`begin` A pointer to the beginning of the read buffer.  
+`begin` A const pointer to the beginning of the read buffer.  
 `length` The length, in char, of the read buffer.  
-`stream_endianness` The endianness of the stream. `etl::endian::little` or `etl::endian::big`.  
+`bit_order` The bit order of the stream. `etl::bit_order::msb_first` (MSB first) or `etl::bit_order::lsb_first` (LSB first).  
+`byte_order` The byte order (endianness) of the stream. `etl::endian::big` or `etl::endian::little`. Defaults to `etl::endian::big`.  
 
 ---
 
@@ -244,15 +248,15 @@ namespace etl
   etl::optional<CustomType> read_unchecked<CustomType>(etl::bit_stream_reader& stream)
   {
     char c    = stream.read_unchecked<char, 7U>();
-    short s   = stream.read_unchecked<short , 11U>();
-    int32_t i = stream.read_unchecked<int32_t, 25U>();
+    short s   = stream.read_unchecked<short>(11U);
+    int32_t i = stream.read_unchecked<int32_t>(25U);
 
     return CustomType { c, s, i };
   }
 }
 
 std::array<char, 100U> storage; // Assume the buffer gets filled with bit stream data.
-etl::bit_stream_reader bit_stream(storage.data(), storage.size());
+etl::bit_stream_reader bit_stream(storage.data(), storage.size(), etl::bit_order::msb_first);
 
 // Read unchecked values from the stream.
 char c            = etl::read_unchecked<char>(bit_stream, 6U);
