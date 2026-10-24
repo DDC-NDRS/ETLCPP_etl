@@ -37,13 +37,13 @@ SOFTWARE.
 /// Defines 'size' which is the size of the largest parameter.
 ///\ingroup largest
 //***************************************************************************
-template <typename T1, typename T2 = void, typename T3 = void, typename T4 = void, 
-          typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void, 
-          typename T9 = void, typename T10 = void, typename T11 = void, typename T12 = void, 
+template <typename T1, typename T2 = void, typename T3 = void, typename T4 = void,
+          typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void,
+          typename T9 = void, typename T10 = void, typename T11 = void, typename T12 = void,
           typename T13 = void, typename T14 = void, typename T15 = void, typename T16 = void>
 struct largest_type
 {
-  // Define 'largest_other' as 'largest_type' with all but the first parameter. 
+  // Define 'largest_other' as 'largest_type' with all but the first parameter.
   typedef typename largest_type<T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>::type largest_other;
 
   // Set 'type' to be the largest of the first parameter and any of the others.
@@ -64,7 +64,7 @@ struct largest_type
 // Specialisation for one template parameter.
 //***************************************************************************
 template <typename T1>
-struct largest_type<T1,   void, void, void, void, void, void, void, 
+struct largest_type<T1,   void, void, void, void, void, void, void,
                     void, void, void, void, void, void, void, void>
 {
   typedef T1 type;

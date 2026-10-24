@@ -109,7 +109,7 @@ namespace etl
       etl::optional<TReturn> call_if()
       {
 				TDelegate& d = static_cast<TDelegate&>(*this);
-				
+
         etl::optional<TReturn> result;
 
         if (d.is_valid())
@@ -191,11 +191,11 @@ namespace etl
   class delegate;
 
   template <typename TReturn, typename TParam>
-  class delegate<TReturn(TParam)> : public private_delegate::call_if_impl<delegate<TReturn(TParam)>, TReturn, TParam>, 
+  class delegate<TReturn(TParam)> : public private_delegate::call_if_impl<delegate<TReturn(TParam)>, TReturn, TParam>,
                                     public delegate_tag
   {
   private:
-  
+
     typedef delegate<TReturn(TParam)> delegate_type;
 
   public:
@@ -252,7 +252,7 @@ namespace etl
     /// Create from a Functor.
     //*************************************************************************
     template <typename TFunctor>
-    static 
+    static
       typename etl::enable_if<etl::is_class<TFunctor>::value &&!is_delegate<TFunctor>::value, delegate>::type
       create(TFunctor& instance)
     {
@@ -757,7 +757,7 @@ namespace etl
     /// Create from Functor.
     //*************************************************************************
     template <typename TFunctor>
-    static 
+    static
       typename etl::enable_if<etl::is_class<TFunctor>::value && !is_delegate<TFunctor>::value, delegate>::type
       create(TFunctor& instance)
     {

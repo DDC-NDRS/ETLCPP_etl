@@ -36,9 +36,9 @@ SOFTWARE.
 /// Defines <b>value</b> which is the largest type, size and alignment of all the parameters.
 ///\ingroup largest
 //***************************************************************************
-template <typename T1, typename T2 = void, typename T3 = void, typename T4 = void, 
-          typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void, 
-          typename T9 = void, typename T10 = void, typename T11 = void, typename T12 = void, 
+template <typename T1, typename T2 = void, typename T3 = void, typename T4 = void,
+          typename T5 = void, typename T6 = void, typename T7 = void, typename T8 = void,
+          typename T9 = void, typename T10 = void, typename T11 = void, typename T12 = void,
           typename T13 = void, typename T14 = void, typename T15 = void, typename T16 = void>
 struct largest
 {

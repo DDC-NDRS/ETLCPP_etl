@@ -84,20 +84,20 @@ public:
 //***************************************************************************
 // For 15 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
-          typename T7, 
-          typename T8, 
-          typename T9, 
-          typename T10, 
-          typename T11, 
-          typename T12, 
-          typename T13, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
+          typename T7,
+          typename T8,
+          typename T9,
+          typename T10,
+          typename T11,
+          typename T12,
+          typename T13,
           typename T14>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
 {
@@ -131,19 +131,19 @@ public:
 //***************************************************************************
 // For 14 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
-          typename T7, 
-          typename T8, 
-          typename T9, 
-          typename T10, 
-          typename T11, 
-          typename T12, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
+          typename T7,
+          typename T8,
+          typename T9,
+          typename T10,
+          typename T11,
+          typename T12,
           typename T13>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
 {
@@ -176,18 +176,18 @@ public:
 //***************************************************************************
 // For 13 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
-          typename T7, 
-          typename T8, 
-          typename T9, 
-          typename T10, 
-          typename T11, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
+          typename T7,
+          typename T8,
+          typename T9,
+          typename T10,
+          typename T11,
           typename T12>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
 {
@@ -219,17 +219,17 @@ public:
 //***************************************************************************
 // For 12 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
-          typename T7, 
-          typename T8, 
-          typename T9, 
-          typename T10, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
+          typename T7,
+          typename T8,
+          typename T9,
+          typename T10,
           typename T11>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
 {
@@ -260,16 +260,16 @@ public:
 //***************************************************************************
 // For 11 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
-          typename T7, 
-          typename T8, 
-          typename T9, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
+          typename T7,
+          typename T8,
+          typename T9,
           typename T10>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
 {
@@ -299,15 +299,15 @@ public:
 //***************************************************************************
 // For 10 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
-          typename T7, 
-          typename T8, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
+          typename T7,
+          typename T8,
           typename T9>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>
 {
@@ -336,14 +336,14 @@ public:
 //***************************************************************************
 // For 9 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
-          typename T7, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
+          typename T7,
           typename T8>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7, T8>
 {
@@ -371,13 +371,13 @@ public:
 //***************************************************************************
 // For 8 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
-          typename T6, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
+          typename T6,
           typename T7>
 struct type_select<T0, T1, T2, T3, T4, T5, T6, T7>
 {
@@ -403,12 +403,12 @@ public:
 //***************************************************************************
 // For 7 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
-          typename T5, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
+          typename T5,
           typename T6>
 struct type_select<T0, T1, T2, T3, T4, T5, T6>
 {
@@ -433,11 +433,11 @@ public:
 //***************************************************************************
 // For 6 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
-          typename T4, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
+          typename T4,
           typename T5>
 struct type_select<T0, T1, T2, T3, T4, T5>
 {
@@ -461,10 +461,10 @@ public:
 //***************************************************************************
 // For 5 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
-          typename T3, 
+template <typename T0,
+          typename T1,
+          typename T2,
+          typename T3,
           typename T4>
 struct type_select<T0, T1, T2, T3, T4>
 {
@@ -487,9 +487,9 @@ public:
 //***************************************************************************
 // For 4 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
-          typename T2, 
+template <typename T0,
+          typename T1,
+          typename T2,
           typename T3>
 struct type_select<T0, T1, T2, T3>
 {
@@ -511,8 +511,8 @@ public:
 //***************************************************************************
 // For 3 types.
 //***************************************************************************
-template <typename T0, 
-          typename T1, 
+template <typename T0,
+          typename T1,
           typename T2>
 struct type_select<T0, T1, T2>
 {
@@ -533,7 +533,7 @@ public:
 //***************************************************************************
 // For 2 types.
 //***************************************************************************
-template <typename T0, 
+template <typename T0,
           typename T1>
 struct type_select<T0, T1>
 {
